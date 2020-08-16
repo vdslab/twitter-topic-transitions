@@ -61,11 +61,11 @@ const App = () => {
   useEffect(() => {
     // fetch("twi_time_coordinate_200_w8_ws15.json")
     fetch("test.json")
-      .then((response) => response.text())
-      .then((text) => console.log(text));
-    // .then((data) => {
-    //   setData(data);
-    // });
+      .then((response) => response.json())
+      // .then((text) => console.log(text))
+      .then((data) => {
+        setData(data);
+      });
   }, []);
 
   console.log(data);
