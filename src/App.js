@@ -59,11 +59,13 @@ const Chart = ({ data }) => {
 const App = () => {
   const [data, setData] = useState([]);
   useEffect(() => {
+    // fetch("twi_time_coordinate_200_w8_ws15.json")
     fetch("test.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data);
-      });
+      .then((response) => response.text())
+      .then((text) => console.log(text));
+    // .then((data) => {
+    //   setData(data);
+    // });
   }, []);
 
   console.log(data);
