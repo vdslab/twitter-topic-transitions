@@ -1,3 +1,11 @@
-node_modules
-build
+# Python
 .venv
+__pycache__
+
+# JavaScript
+node_modules
+.eslintcache
+
+# Project
+build
+data
