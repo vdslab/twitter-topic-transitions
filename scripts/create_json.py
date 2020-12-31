@@ -53,8 +53,14 @@ def main():
         i)] for i in range(num_groups)]
     topic_coordinates = TSNE(
         perplexity=50, random_state=args.seed).fit_transform(topic_vec)
-    topics = [{'time': min(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')), 'tweetCount': args.chunk, 'vec': [float(v) for v in model.docvecs['twhour{}'.format(i)]], 'x': float(x), 'y': float(y)}
-              for i, (x, y) in enumerate(topic_coordinates)]
+    topics = [{
+        'time': min(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
+        'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
+        'tweetCount': args.chunk,
+        'vec': [float(v) for v in model.docvecs['twhour{}'.format(i)]],
+        'x': float(x),
+        'y': float(y)
+    } for i, (x, y) in enumerate(topic_coordinates)]
     words = [{'word': w['word'], 'count': w['count'], 'hourlyCount': [group_words[i].get(
         w['word'], 0) for i in range(num_groups)], 'vec': [float(v) for v in model.wv[word]]} for w in words]
     obj = {

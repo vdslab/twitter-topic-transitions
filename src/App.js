@@ -8,11 +8,9 @@ const App = () => {
 
   useEffect(() => {
     fetch("data.json")
-      // fetch("test.json")
       .then((response) => response.json())
-      // .then((text) => // // console.log(text));
       .then((data) => {
-        // // console.log(data);
+        console.log(data);
         setData(data.topics);
       });
   }, []);
@@ -112,6 +110,15 @@ const ProjectionView = ({ data, setTimeData }) => {
           const date = new Date(item.time);
           return date.getTime();
         };
+        const tweetPerHour = (item) => {
+          const start = new Date(item.time);
+          const stop = new Date(item.stopTime);
+          return (item.tweetCount * 3600000) / (stop - start);
+        };
+        const sizeScale = d3
+          .scaleSqrt()
+          .domain(d3.extent(data, tweetPerHour))
+          .range([0, 15]);
         const colorScale = d3
           .scaleSequential(d3.interpolateWarm)
           .domain(d3.extent(data, getTime));
@@ -150,7 +157,7 @@ const ProjectionView = ({ data, setTimeData }) => {
                       }}
                     >
                       <circle
-                        r="3"
+                        r={sizeScale(tweetPerHour(item))}
                         opacity="0.5"
                         fill={`${colorScale(getTime(item))}`}
                       >
