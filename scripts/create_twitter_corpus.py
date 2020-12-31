@@ -4,7 +4,7 @@ import os
 import re
 from argparse import ArgumentParser
 from datetime import datetime, timedelta, timezone
-from itertools import count
+from itertools import count, groupby
 from tokenizer import divide_text
 
 
@@ -38,35 +38,27 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('-o', '--output', dest='output',
                         default='words.csv', help='output filename')
-    parser.add_argument('--start', dest='start',
-                        default='2019121700', help='start date')
-    parser.add_argument('--stop', dest='stop',
-                        default='2020050100', help='stop date')
+    parser.add_argument('--chunk', dest='chunk',
+                        default=100, help='chunk size', type=int)
     parser.add_argument('--window', dest='window',
-                        default=24, help='window size', type=int)
+                        default=20, help='window size', type=int)
     parser.add_argument('files', nargs='+')
     args = parser.parse_args()
-
-    start = datetime.strptime(args.start, '%Y%m%d%H%M')
-    stop = datetime.strptime(args.stop, '%Y%m%d%H%M')
 
     outpath = os.path.abspath(args.output)
     os.makedirs(os.path.dirname(outpath), exist_ok=True)
     with open(outpath, 'w') as f:
-        for t in load_tweet(*args.files):
-            if 'retweeted_status' in t:
-                continue
-
-            d = datetime.strptime(t['created_at'], '%a %b %d %H:%M:%S %z %Y').astimezone(
-                timezone(timedelta(hours=9)))
-            d = datetime(d.year, d.month, d.day, d.hour)
-            if d < start or stop <= d:
-                continue
+        tweets = [t for t in load_tweet(
+            *args.files) if 'retweeted_status' not in t]
+        tweets.sort(key=lambda t: t['id'])
+        groups = (len(tweets) + args.chunk - 1) // args.chunk
+        for i, t in enumerate(tweets):
+            group_id = i // args.chunk
             tags = ['twuser{}'.format(t['user']['id']), 'tw{}'.format(t['id'])]
-            for i in range(-args.window, args.window + 1):
-                e = d + timedelta(hours=i)
-                tags.append('twhour{}'.format(e.strftime('%Y%m%d%H')))
+            for j in range(max(0, group_id - args.window), min(groups, group_id + args.window + 1)):
+                tags.append('twhour{}'.format(j))
             f.write(json.dumps({
+                'group_id': group_id,
                 'created_at': t['created_at'],
                 'tags': tags,
                 'words': divide_text(full_text(t)),

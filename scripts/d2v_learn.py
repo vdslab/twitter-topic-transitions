@@ -24,10 +24,14 @@ def main():
     parser.add_argument('files', nargs='+')
     args = parser.parse_args()
 
+    print('loading documents')
     documents = list(load_documents(*args.files))
-    model = Doc2Vec(documents, seed=args.seed, workers=16)
-    model.save(args.model)
+    print('start learning')
+    model = Doc2Vec(documents, seed=args.seed, vector_size=300,
+                    window=8, epochs=10, min_count=10, workers=4)
 
+    print('writing results')
+    model.save(args.model)
     vocabulary = {}
     for doc in documents:
         for word in doc.words:
@@ -39,6 +43,7 @@ def main():
     items.sort(key=lambda v: v[1], reverse=True)
     for k, v in items:
         vocabulary_writer.writerow([k, v])
+    print('finish')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 import json
 from argparse import ArgumentParser
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import count
 from gensim.models.doc2vec import Doc2Vec
 from sklearn.manifold import TSNE
@@ -13,43 +13,35 @@ def main():
     parser.add_argument('-c', '--corpus', dest='corpus', help='corpus path')
     parser.add_argument('-m', '--model', dest='model', help='model path')
     parser.add_argument('-o', '--output', dest='output', help='output path')
-    parser.add_argument('--start', dest='start',
-                        default='2019121700', help='start date')
-    parser.add_argument('--stop', dest='stop',
-                        default='2020050100', help='stop date')
+    parser.add_argument('--seed', dest='seed', default=0,
+                        type=int, help='random seed')
+    parser.add_argument('--chunk', dest='chunk',
+                        default=100, help='chunk size', type=int)
+    parser.add_argument('--window', dest='window',
+                        default=20, help='window size', type=int)
     args = parser.parse_args()
 
     model = Doc2Vec.load(args.model)
 
-    start = datetime.strptime(args.start, datetime_format)
-    stop = datetime.strptime(args.stop, datetime_format)
-    times = []
-    for i in count():
-        t = start + timedelta(hours=i)
-        if t >= stop:
-            break
-        h = t.strftime(datetime_format)
-        tag = 'twhour{}'.format(h)
-        times.append((t, h, tag))
+    corpus = [json.loads(row.strip()) for row in open(args.corpus)]
+    num_groups = max(t['group_id'] for t in corpus) + 1
+    group_words = [{} for _ in range(num_groups)]
+    group_times = [[] for _ in range(num_groups)]
 
-    hour_words = {h: {} for _, h, _ in times}
-    tweet_count = {h: 0 for _, h, _ in times}
-    for row in open(args.corpus):
-        t = json.loads(row.strip())
-        d = datetime.strptime(t['created_at'], '%a %b %d %H:%M:%S %z %Y')
-        h = d.strftime(datetime_format)
-        tweet_count[h] += 1
+    for t in corpus:
+        g = t['group_id']
+        group_times[g].append(t['created_at'])
         for word in t['words']:
             if word['pos'] not in ['名詞', '動詞', '形容詞']:
                 continue
             word = word['base']
-            if word not in hour_words[h]:
-                hour_words[h][word] = 0
-            hour_words[h][word] += 1
+            if word not in group_words[g]:
+                group_words[g][word] = 0
+            group_words[g][word] += 1
 
     words = {}
-    for h in hour_words:
-        for word in hour_words[h]:
+    for i in range(num_groups):
+        for word in group_words[i]:
             if word not in words:
                 words[word] = 0
             words[word] += 1
@@ -57,10 +49,14 @@ def main():
     words.sort(key=lambda w: w['count'], reverse=True)
     words = [w for w in words][:300]
 
-    topics = [{'time': t.strftime('%Y-%m-%dT%H:%M:%S'), 'tweetCount': tweet_count[h], 'vec': [float(v) for v in model.docvecs[tag]]}
-              for t, h, tag in times]
-    words = [{'word': w['word'], 'count': w['count'], 'hourlyCount': [hour_words[h].get(
-        w['word'], 0) for _, h, _ in times], 'vec': [float(v) for v in model.wv[word]]} for w in words]
+    topic_vec = [model.docvecs['twhour{}'.format(
+        i)] for i in range(num_groups)]
+    topic_coordinates = TSNE(
+        perplexity=50, random_state=args.seed).fit_transform(topic_vec)
+    topics = [{'time': min(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')), 'tweetCount': args.chunk, 'vec': [float(v) for v in model.docvecs['twhour{}'.format(i)]], 'x': float(x), 'y': float(y)}
+              for i, (x, y) in enumerate(topic_coordinates)]
+    words = [{'word': w['word'], 'count': w['count'], 'hourlyCount': [group_words[i].get(
+        w['word'], 0) for i in range(num_groups)], 'vec': [float(v) for v in model.wv[word]]} for w in words]
     obj = {
         'topics': topics,
         'words': words,
