@@ -3,9 +3,9 @@ module.exports = {
     configure: (config) => {
       config.module.rules.push({
         test: /\.worker\.js$/,
-        use: { loader: 'workerize-loader' }
-      })
-      return config
-    }
-  }
-}
+        use: { loader: "workerize-loader" },
+      });
+      return config;
+    },
+  },
+};

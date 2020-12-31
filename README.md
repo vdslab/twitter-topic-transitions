@@ -25,5 +25,5 @@ $ python3 scripts/d2v_learn.py --model data/twitter.model --vocabulary-output da
 ### generate json file
 
 ```shell-session
-$  python3 scripts/create_json.py -m ./data/twitter.model -o public/data.json --corpus=data/corpus/twitter_corvid19.ndjson
+$ python3 scripts/create_json.py -m ./data/twitter.model -o public/data.json --corpus=data/corpus/twitter_corvid19.ndjson
 ```

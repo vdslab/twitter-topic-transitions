@@ -1,206 +1,206 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
 const App = () => {
   const [data, setData] = useState([]);
+  const [timeData, setTimeData] = useState([]);
+  const [windowSize, setWindowSize] = useState([]);
+
   useEffect(() => {
-    fetch("twi_time_coordinate_200_w8_ws20.json")
+    fetch("data.json")
       // fetch("test.json")
       .then((response) => response.json())
       // .then((text) => // // console.log(text));
       .then((data) => {
         // // console.log(data);
-        setData(data);
+        setData(data.topics);
       });
   }, []);
 
   return (
-    <div>
-      <section className="hero is-primary">
-        <div className="hero-body">
-          <div className="container">
-            <h1 className="title">hello</h1>
-            <h2 className="subtitle">hello</h2>
+    <>
+      <nav
+        className="navbar is-info"
+        role="navigation"
+        aria-label="main navigation"
+      ></nav>
+      <main className="main has-background-light">
+        <div className="main-contents">
+          <div className="form p-3">
+            <div className="box has-background-info-light">
+              <p className="control">
+                <input
+                  id="windowSize"
+                  className="input"
+                  type="text"
+                  placeholder="Window size, defult 5."
+                  // value="3"
+                  // defaultValue="5"
+                  onChange={(e) => {
+                    // // console.log("e = " + e.target.value);
+                    setWindowSize(e.target.value);
+                    // // console.log("windowSize = " + windowSize);
+                  }}
+                />
+              </p>
+            </div>
+          </div>
+          <div className="projection-view p-3">
+            <div className="box has-background-info-light">
+              <ProjectionView data={data} setTimeData={setTimeData} />
+            </div>
+          </div>
+          <div className="word-bubble-view p-3">
+            <div className="box has-background-info-light">
+              <WordBubbleView
+                data={data}
+                timeData={timeData}
+                windowSize={windowSize}
+              />
+            </div>
           </div>
         </div>
-      </section>
-      <section className="section">
-        <div className="container max-width">
-          <Chart data={data} />
-        </div>
-      </section>
-      <footer className="footer">
-        <div className="content has-text-centered">
-          <p>&copy;2020 xiaotiandong</p>
-        </div>
-      </footer>
+      </main>
+    </>
+  );
+};
+
+const Responsive = ({ render }) => {
+  const wrapperRef = useRef();
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    function handleResize() {
+      setWidth(wrapperRef.current.clientWidth);
+      setHeight(wrapperRef.current.clientHeight);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return (
+    <div style={{ width: "100%", height: "100%" }} ref={wrapperRef}>
+      {render(width, height)}
     </div>
   );
 };
 
-const Chart = ({ data }) => {
-  const [timeData, setTimeData] = useState([]);
-  // // // console.log(timeData);
-
-  const [windowSize, setWindowSize] = useState([]);
-
-  const contentWidth = 800;
-  const contentHeight = 800;
-  const margin = { left: 20, right: 20, top: 20, bottom: 70 };
-  const width = margin.left + margin.right + contentWidth;
-  const height = margin.top + margin.bottom + contentHeight;
-  const xScale = d3
-    .scaleLinear()
-    .domain(d3.extent(data, (item) => item.x))
-    .range([0, contentWidth]);
-  const yScale = d3
-    .scaleLinear()
-    .domain(d3.extent(data, (item) => item.y))
-    .range([contentHeight, 0]);
-  const line = d3
-    .line()
-    .x((item) => xScale(item.x))
-    .y((item) => yScale(item.y));
-  const getTime = (item) => {
-    const date = new Date(item.time);
-    return date.getTime();
-  };
-  const colorScale = d3
-    .scaleSequential(d3.interpolateCool)
-    .domain(d3.extent(data, getTime));
-
-  // // // console.log(colorScale.ticks());
-  if (colorScale.ticks().length !== 0) {
-    // // console.log(colorScale.ticks());
-  }
-
+const ProjectionView = ({ data, setTimeData }) => {
   return (
-    <section className="section">
-      <section className="section">
-        <div className="container max-width">
-          {/* <nav className="panel"> */}
-          {/* <div className="panel-block"> */}
-          <p className="control">
-            <input
-              id="windowSize"
-              className="input"
-              type="text"
-              placeholder="Window size, defult 5."
-              // value="3"
-              // defaultValue="5"
-              onChange={(e) => {
-                // // console.log("e = " + e.target.value);
-                setWindowSize(e.target.value);
-                // // console.log("windowSize = " + windowSize);
-              }}
-            />
-          </p>
-          {/* </div> */}
-          {/* </nav> */}
-        </div>
-      </section>
-      <div className="container max-width">
-        <div className="columns is-gapless">
-          <div className="column is-half">
-            <div className="container">
-              <h3 className="title is-4">twi_time_coordinate_200_w8_ws20</h3>
-            </div>
-            <div className="box">
-              <svg viewBox={`0 0 ${width} ${height}`}>
-                <g transform={`translate(${margin.left}, ${margin.top})`}>
-                  <g>
-                    <path fill="none" stroke="lightgray" d={line(data)} />
-                  </g>
-                  <g>
-                    {data.map((item, i) => {
-                      // // console.log("before: " + item.time);
-                      const date = new Date(item.time);
-                      // // // console.log("after: " + date);
-                      // // // console.log(item.time);
+    <Responsive
+      render={(width, height) => {
+        const margin = { left: 20, right: 20, top: 20, bottom: 70 };
+        const contentWidth = width - margin.left - margin.right;
+        const contentHeight = height - margin.top - margin.bottom;
+        const xScale = d3
+          .scaleLinear()
+          .domain(d3.extent(data, (item) => item.x))
+          .range([0, contentWidth]);
+        const yScale = d3
+          .scaleLinear()
+          .domain(d3.extent(data, (item) => item.y))
+          .range([contentHeight, 0]);
+        const line = d3
+          .line()
+          .x((item) => xScale(item.x))
+          .y((item) => yScale(item.y));
+        const getTime = (item) => {
+          const date = new Date(item.time);
+          return date.getTime();
+        };
+        const colorScale = d3
+          .scaleSequential(d3.interpolateWarm)
+          .domain(d3.extent(data, getTime));
+        return (
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ backgroundColor: "white" }}
+          >
+            <g transform={`translate(${margin.left}, ${margin.top})`}>
+              <g>
+                <path fill="none" stroke="lightgray" d={line(data)} />
+              </g>
+              <g>
+                {data.map((item, i) => {
+                  // // console.log("before: " + item.time);
+                  const date = new Date(item.time);
+                  // // // console.log("after: " + date);
+                  // // // console.log(item.time);
 
-                      return (
-                        <g
-                          key={i}
-                          transform={`translate(${xScale(item.x)}, ${yScale(
-                            item.y
-                          )})`}
-                          onMouseEnter={() => {
-                            var timeData = item.time;
-                            // console.log(timeData);
-                            setTimeData(timeData);
-                            // console.log("windowSize = " + windowSize);
-                          }}
-                          onMouseLeave={() => {
-                            var timeData = new Date();
-                            // console.log(timeData);
-                            setTimeData(timeData);
-                          }}
-                        >
-                          <circle
-                            r="3"
-                            opacity="0.5"
-                            fill={`${colorScale(getTime(item))}`}
-                          >
-                            <title>
-                              {date.getFullYear()}/
-                              {(date.getMonth() + 1)
-                                .toString()
-                                .padStart(2, "0")}
-                              /{date.getDate().toString().padStart(2, "0")}-
-                              {date.getHours().toString().padStart(2, "0")}
-                            </title>
-                          </circle>
-                        </g>
-                      );
-                    })}
+                  return (
+                    <g
+                      key={i}
+                      transform={`translate(${xScale(item.x)}, ${yScale(
+                        item.y
+                      )})`}
+                      onMouseEnter={() => {
+                        var timeData = item.time;
+                        // console.log(timeData);
+                        setTimeData(timeData);
+                        // console.log("windowSize = " + windowSize);
+                      }}
+                      onMouseLeave={() => {
+                        var timeData = new Date();
+                        // console.log(timeData);
+                        setTimeData(timeData);
+                      }}
+                    >
+                      <circle
+                        r="3"
+                        opacity="0.5"
+                        fill={`${colorScale(getTime(item))}`}
+                      >
+                        <title>
+                          {date.getFullYear()}/
+                          {(date.getMonth() + 1).toString().padStart(2, "0")}/
+                          {date.getDate().toString().padStart(2, "0")}-
+                          {date.getHours().toString().padStart(2, "0")}
+                        </title>
+                      </circle>
+                    </g>
+                  );
+                })}
+              </g>
+            </g>
+            <g
+              transform={`translate(${margin.left}, ${
+                margin.top + contentHeight + 25
+              })`}
+            >
+              {colorScale.ticks().map((item, i) => {
+                const date = new Date(item);
+                return (
+                  <g key={i} transform={`translate(${80 * i}, ${0})`}>
+                    <circle
+                      r="2"
+                      opacity="0.5"
+                      fill={`${colorScale(item)}`}
+                    ></circle>
+                    <text dominantBaseline="central" fontSize="8" x="5">
+                      {date.getFullYear()}
+                      {(date.getMonth() + 1).toString().padStart(2, "0")}
+                      {date.getDate().toString().padStart(2, "0")}
+                    </text>
                   </g>
-                </g>
-                <g
-                  transform={`translate(${margin.left}, ${
-                    margin.top + contentHeight + 25
-                  })`}
-                >
-                  {colorScale.ticks().map((item, i) => {
-                    const date = new Date(item);
-                    return (
-                      <g key={i} transform={`translate(${80 * i}, ${0})`}>
-                        <circle
-                          r="2"
-                          opacity="0.5"
-                          fill={`${colorScale(item)}`}
-                        ></circle>
-                        <text dominantBaseline="central" fontSize="8" x="5">
-                          {date.getFullYear()}
-                          {(date.getMonth() + 1).toString().padStart(2, "0")}
-                          {date.getDate().toString().padStart(2, "0")}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </g>
-              </svg>
-            </div>
-          </div>
-          <div className="column">
-            <section className="section">
-              {/* <div className="container"> */}
-              {/* <div className="column"> */}
-              {timeData.length === 0 ? (
-                <div className="container">
-                  <AllWordPlot />
-                </div>
-              ) : (
-                <div className="container">
-                  <WordPlot timeData={timeData} windowSize={windowSize} />
-                </div>
-              )}
-              {/* </div> */}
-              {/* </div> */}
-            </section>
-          </div>
-        </div>
-      </div>
-    </section>
+                );
+              })}
+            </g>
+          </svg>
+        );
+      }}
+    />
+  );
+};
+
+const WordBubbleView = ({ data, timeData, windowSize }) => {
+  return timeData.length === 0 ? (
+    <AllWordPlot />
+  ) : (
+    <WordPlot timeData={timeData} windowSize={windowSize} />
   );
 };
 
@@ -217,76 +217,73 @@ const AllWordPlot = () => {
       });
   }, []);
 
-  const contentWidth = 800;
-  const contentHeight = 800;
-
-  // console.log(allWord);
-
-  const margin = {
-    left: 50,
-    right: 50,
-    top: 10,
-    bottom: 20,
-  };
-
-  const width = contentWidth + margin.left + margin.right;
-  const height = contentHeight + margin.top + margin.bottom;
-
-  // const color = d3.scaleOrdinal(d3.schemeAccent);
-
-  const color = (d) => {
-    if (d === "red") return "lightgray";
-    else return d;
-  };
-
-  // const circleSize = (d) => Math.pow(d.count, 0.7);
-  const circleSize = (d) => Math.log(d.count) * 3;
-
-  // const countMax = d3.max(words, (item) => item.count);
-  // const countMin = d3.min(words, (item) => item.count);
-
-  const circleScale = d3
-    .scaleLinear()
-    .domain([
-      d3.min(allWord, (item) => item.count),
-      d3.max(allWord, (item) => item.count),
-    ])
-    .range([0.5, 1])
-    .nice();
-
-  // console.log(countMin);
-
-  const circleOpacity = (d) => circleScale(d.count);
-  // 对数log处理 ， 透明度
-
-  // const circleSize = (d) => d.count;
-
-  const xScale = d3
-    .scaleLinear()
-    .domain([
-      d3.min(allWord, (item) => item.x),
-      d3.max(allWord, (item) => item.x),
-    ])
-    .range([0, contentWidth])
-    .nice();
-
-  const yScale = d3
-    .scaleLinear()
-    .domain([
-      d3.max(allWord, (item) => item.y),
-      d3.min(allWord, (item) => item.y),
-    ])
-    .range([0, contentHeight])
-    .nice();
-
   return (
-    <div className="container">
-      <div className="container">
-        <h3 className="title is-4">All Time Word</h3>
-      </div>
-      <div className="container">
-        <div className="box">
-          <svg viewBox={`0 0 ${width} ${height}`}>
+    <Responsive
+      render={(width, height) => {
+        const margin = {
+          left: 10,
+          right: 10,
+          top: 50,
+          bottom: 10,
+        };
+
+        const contentWidth = width - margin.left - margin.right;
+        const contentHeight = height - margin.top - margin.bottom;
+
+        // const color = d3.scaleOrdinal(d3.schemeAccent);
+
+        const color = (d) => {
+          if (d === "red") return "lightgray";
+          else return d;
+        };
+
+        // const circleSize = (d) => Math.pow(d.count, 0.7);
+        const circleSize = (d) => Math.log(d.count) * 3;
+
+        // const countMax = d3.max(words, (item) => item.count);
+        // const countMin = d3.min(words, (item) => item.count);
+
+        const circleScale = d3
+          .scaleLinear()
+          .domain([
+            d3.min(allWord, (item) => item.count),
+            d3.max(allWord, (item) => item.count),
+          ])
+          .range([0.5, 1])
+          .nice();
+
+        // console.log(countMin);
+
+        const circleOpacity = (d) => circleScale(d.count);
+        // 对数log处理 ， 透明度
+
+        // const circleSize = (d) => d.count;
+
+        const xScale = d3
+          .scaleLinear()
+          .domain([
+            d3.min(allWord, (item) => item.x),
+            d3.max(allWord, (item) => item.x),
+          ])
+          .range([0, contentWidth])
+          .nice();
+
+        const yScale = d3
+          .scaleLinear()
+          .domain([
+            d3.max(allWord, (item) => item.y),
+            d3.min(allWord, (item) => item.y),
+          ])
+          .range([0, contentHeight])
+          .nice();
+        return (
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ backgroundColor: "white" }}
+          >
+            <text dominantBaseline="centra" y="20">
+              All Time Word
+            </text>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
               {allWord.map((item, i) => {
                 return (
@@ -316,9 +313,9 @@ const AllWordPlot = () => {
               })}
             </g>
           </svg>
-        </div>
-      </div>
-    </div>
+        );
+      }}
+    />
   );
 };
 
@@ -417,76 +414,78 @@ const WordPlot = ({ timeData, windowSize }) => {
     });
   }, [timeData, windowSize]);
 
-  const contentWidth = 800;
-  const contentHeight = 800;
+  if (words.length === 0) {
+    return <AllWordPlot />;
+  }
 
-  // // console.log(words);
+  return (
+    <Responsive
+      render={(width, height) => {
+        const margin = {
+          left: 10,
+          right: 10,
+          top: 50,
+          bottom: 10,
+        };
+        const contentWidth = width - margin.left - margin.right;
+        const contentHeight = height - margin.top - margin.bottom;
 
-  const margin = {
-    left: 50,
-    right: 50,
-    top: 10,
-    bottom: 20,
-  };
+        // const color = d3.scaleOrdinal(d3.schemeAccent);
 
-  const width = contentWidth + margin.left + margin.right;
-  const height = contentHeight + margin.top + margin.bottom;
+        const color = (d) => {
+          if (d === "red") return "lightgray";
+          else return d;
+        };
 
-  // const color = d3.scaleOrdinal(d3.schemeAccent);
+        // const circleSize = (d) => Math.pow(d.count, 0.7);
+        const circleSize = (d) => Math.log(d.count) * 12;
 
-  const color = (d) => {
-    if (d === "red") return "lightgray";
-    else return d;
-  };
+        // const countMax = d3.max(words, (item) => item.count);
+        // const countMin = d3.min(words, (item) => item.count);
 
-  // const circleSize = (d) => Math.pow(d.count, 0.7);
-  const circleSize = (d) => Math.log(d.count) * 12;
+        const circleScale = d3
+          .scaleLinear()
+          .domain([
+            d3.min(words, (item) => item.count),
+            d3.max(words, (item) => item.count),
+          ])
+          .range([0.5, 1])
+          .nice();
 
-  // const countMax = d3.max(words, (item) => item.count);
-  // const countMin = d3.min(words, (item) => item.count);
+        // console.log(countMin);
 
-  const circleScale = d3
-    .scaleLinear()
-    .domain([
-      d3.min(words, (item) => item.count),
-      d3.max(words, (item) => item.count),
-    ])
-    .range([0.5, 1])
-    .nice();
+        const circleOpacity = (d) => circleScale(d.count);
 
-  // console.log(countMin);
+        const xScale = d3
+          .scaleLinear()
+          .domain([
+            d3.min(words, (item) => item.x),
+            d3.max(words, (item) => item.x),
+          ])
+          .range([0, contentWidth])
+          .nice();
 
-  const circleOpacity = (d) => circleScale(d.count);
+        const yScale = d3
+          .scaleLinear()
+          .domain([
+            d3.max(words, (item) => item.y),
+            d3.min(words, (item) => item.y),
+          ])
+          .range([0, contentHeight])
+          .nice();
 
-  const xScale = d3
-    .scaleLinear()
-    .domain([d3.min(words, (item) => item.x), d3.max(words, (item) => item.x)])
-    .range([0, contentWidth])
-    .nice();
-
-  const yScale = d3
-    .scaleLinear()
-    .domain([d3.max(words, (item) => item.y), d3.min(words, (item) => item.y)])
-    .range([0, contentHeight])
-    .nice();
-
-  return words.length === 0 ? (
-    <div className="container">
-      <AllWordPlot />
-    </div>
-  ) : (
-    <div className="container">
-      <div className="container">
-        <h3 className="title is-4">
-          {cDate.getFullYear()}/
-          {(cDate.getMonth() + 1).toString().padStart(2, "0")}/
-          {cDate.getDate().toString().padStart(2, "0")}-
-          {cDate.getHours().toString().padStart(2, "0")} window = {windowSize}
-        </h3>
-      </div>
-      <div className="container">
-        <div className="box">
-          <svg viewBox={`0 0 ${width} ${height}`}>
+        return (
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ backgroundColor: "white" }}
+          >
+            <text dominantBaseline="centra" y="20">
+              {cDate.getFullYear()}/
+              {(cDate.getMonth() + 1).toString().padStart(2, "0")}/
+              {cDate.getDate().toString().padStart(2, "0")}-
+              {cDate.getHours().toString().padStart(2, "0")} window ={" "}
+              {windowSize}
+            </text>
             <g transform={`translate(${margin.left}, ${margin.top})`}>
               {words.map((item, i) => {
                 return (
@@ -517,9 +516,9 @@ const WordPlot = ({ timeData, windowSize }) => {
               })}
             </g>
           </svg>
-        </div>
-      </div>
-    </div>
+        );
+      }}
+    />
   );
 };
 
