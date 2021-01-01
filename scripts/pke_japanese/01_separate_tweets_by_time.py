@@ -1,27 +1,20 @@
 import os
 import json
+import argparse
 
 import time_convert_func
 
 
-folder_path = 'json/covid19-tweets'
-dirs = os.listdir(folder_path)
-dirs.sort()
-
-
 def get_tweet_by_h(file):
-    file = folder_path + '/' + str(file)
-
-    twi_by_h = []
-    for i in range(0, 24):
-        twi_by_h.append([])
+    twi_by_h = [[] for _ in range(24)]
 
     with open(file, 'r') as reader:
         # jtw = []
         for row in reader:
             obj = json.loads(row)
 
-            created_at_jp = time_convert_func.jptime_format(time_convert_func.get_jptime(obj["created_at"]))
+            created_at_jp = time_convert_func.jptime_format(
+                time_convert_func.get_jptime(obj["created_at"]))
             # obj = json.dumps({**obj, **{"created_at_jp": created_at_jp}})
             obj["created_at_jp"] = created_at_jp
 
@@ -33,8 +26,7 @@ def get_tweet_by_h(file):
     return twi_by_h
 
 
-def write_tbh_file(w_date, twibh):
-    w_path = './json/tweets_by_hours/'
+def write_tbh_file(w_date, twibh, w_path):
     for i in range(0, 24):
         w_fname = w_date + '_' + "{:0>2d}".format(i) + '.json'
         submit = w_path + '/' + w_fname
@@ -45,15 +37,19 @@ def write_tbh_file(w_date, twibh):
             json.dump(result, f, ensure_ascii=False, indent=4)
 
 
-for file_name in dirs:
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('indir')
+    parser.add_argument('outdir')
+    args = parser.parse_args()
 
-    # file_name = "tweets20200321.ndjson"
+    dirs = os.listdir(args.indir)
+    dirs.sort()
+    for file_name in dirs:
+        date = file_name[6:14]
+        tbh = get_tweet_by_h(args.indir + '/' + file_name)
+        write_tbh_file(date, tbh, args.outdir)
 
-    date = file_name[6:14]
 
-    # path = './json/tweets_by_hours/'
-    # os.makedirs(path)
-
-    tbh = get_tweet_by_h(file_name)
-
-    write_tbh_file(date, tbh)
+if __name__ == '__main__':
+    main()

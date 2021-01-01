@@ -14,7 +14,6 @@ args = parser.parse_args()
 
 words = defaultdict(lambda: 0)
 for line in io.open(args.input, "r", encoding="utf-8"):
-    print("working on counting...")
     line = line.strip()
     if line == "" or line[0] == "<":
         continue
@@ -27,7 +26,6 @@ few_word_num = 0
 
 f = args.output
 with io.open(args.output, "w", encoding="utf-8") as f:
-    print("writing file...")
     for word in words:
         if words[word] <= 10:
             few_word_num += 1

@@ -17,8 +17,13 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--model', dest='model',
                         default='twitter.model', help='model output filename')
-    parser.add_argument('--seed', dest='seed',
-                        default=0, type=int, help='random seed')
+    parser.add_argument('--vector-size', dest='vector_size',
+                        default=100, type=int, help='vector size')
+    parser.add_argument('--window', dest='window', default=5, type=int)
+    parser.add_argument('--epochs', dest='epochs', default=10, type=int)
+    parser.add_argument('--min-count', dest='min_count', default=0, type=int)
+    parser.add_argument('--seed', dest='seed', default=0,
+                        type=int, help='random seed')
     parser.add_argument('--vocabulary-output', dest='vocabulary',
                         default='vocabulary.csv', help='model filename')
     parser.add_argument('files', nargs='+')
@@ -27,22 +32,11 @@ def main():
     print('loading documents')
     documents = list(load_documents(*args.files))
     print('start learning')
-    model = Doc2Vec(documents, seed=args.seed, vector_size=300,
-                    window=8, epochs=10, min_count=10, workers=4)
+    model = Doc2Vec(documents, seed=args.seed, vector_size=args.vector_size,
+                    window=args.window, epochs=args.epochs, min_count=args.min_count, workers=4)
 
     print('writing results')
     model.save(args.model)
-    vocabulary = {}
-    for doc in documents:
-        for word in doc.words:
-            if word not in vocabulary:
-                vocabulary[word] = 0
-            vocabulary[word] += 1
-    vocabulary_writer = csv.writer(open(args.vocabulary, 'w'))
-    items = list(vocabulary.items())
-    items.sort(key=lambda v: v[1], reverse=True)
-    for k, v in items:
-        vocabulary_writer.writerow([k, v])
     print('finish')
 
 

@@ -52,7 +52,7 @@ def main():
     topic_vec = [model.docvecs['twhour{}'.format(
         i)] for i in range(num_groups)]
     topic_coordinates = TSNE(
-        perplexity=50, random_state=args.seed).fit_transform(topic_vec)
+        perplexity=5, random_state=args.seed).fit_transform(topic_vec)
     topics = [{
         'time': min(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
         'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
