@@ -1,7 +1,14 @@
+import { useDispatch, useSelector } from "react-redux";
 import * as d3 from "d3";
+import slice from "../slice";
 import { Responsive } from "./Responsive.js";
 
-const WordBubbleChart = ({ words, selectedTopics, width, height }) => {
+const WordBubbleChart = ({ width, height }) => {
+  const words = useSelector(({ words }) => words);
+  const selectedTopics = useSelector(
+    ({ selectedTopic, topics, topicClusters }) =>
+      selectedTopic == null ? [] : topicClusters[topics[selectedTopic].cluster]
+  );
   const margin = {
     left: 50,
     right: 50,
@@ -40,13 +47,7 @@ const WordBubbleChart = ({ words, selectedTopics, width, height }) => {
     selectedTopics.every((topicId) => hourlyCount[topicId] > 0)
   );
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      style={{ backgroundColor: "white" }}
-    >
-      <text dominantBaseline="centra" y="20">
-        All Time Word
-      </text>
+    <svg viewBox={`0 0 ${width} ${height}`}>
       <g transform={`translate(${margin.left}, ${margin.top})`}>
         {filteredWords.map((item, i) => {
           return (
@@ -79,6 +80,9 @@ const WordBubbleChart = ({ words, selectedTopics, width, height }) => {
 };
 
 export function WordBubbleView({ words, selectedTopics }) {
+  const dispatch = useDispatch();
+  const selectedTopic = useSelector(({ selectedTopic }) => selectedTopic);
+  const topics = useSelector(({ topics }) => topics);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
@@ -87,9 +91,30 @@ export function WordBubbleView({ words, selectedTopics }) {
             <label className="label">Selected Topic</label>
           </div>
           <div className="field-body">
-            <div className="field">
+            <div className="field has-addons">
+              <div className="control is-expanded">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  max={topics.length - 1}
+                  value={selectedTopic || ""}
+                  onChange={(event) => {
+                    dispatch(slice.actions.selectTopic(+event.target.value));
+                  }}
+                />
+              </div>
               <div className="control">
-                <input className="input" type="number" />
+                <button
+                  className="button"
+                  onClick={() => {
+                    dispatch(slice.actions.selectTopic(null));
+                  }}
+                >
+                  <span className="icon">
+                    <i className="fas fa-times" />
+                  </span>
+                </button>
               </div>
             </div>
           </div>
