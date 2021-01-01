@@ -26,24 +26,39 @@ const optimalFontSize = (word, r, fontFamily, fontWeight) => {
   return ok;
 };
 
+const getTime = (item) => {
+  const date = new Date(item.time);
+  return date.getTime();
+};
+
+function tweetPerHour(item) {
+  const start = new Date(item.time);
+  const stop = new Date(item.stopTime);
+  return (item.tweetCount * 3600000) / (stop - start);
+}
+
 export async function loadData() {
   const response = await fetch("data.json");
   const data = await response.json();
-  const { clusters: topicClusters } = await dbscan(
-    data.topics.map(({ x, y }) => [x, y]),
-    1.8,
-    1
-  );
-  topicClusters.forEach((cluster, i) => {
-    for (const topicId of cluster) {
-      data.topics[topicId].cluster = i;
-    }
-  });
+
+  const topicColor = d3
+    .scaleSequential(d3.interpolateWarm)
+    .domain(d3.extent(data.topics, getTime));
+  const topicCircleSize = d3
+    .scaleSqrt()
+    .domain(d3.extent(data.topics, tweetPerHour))
+    .range([1, 5]);
+  for (const topic of data.topics) {
+    topic.tweetPerHour = tweetPerHour(topic);
+    topic.r = topicCircleSize(topic.tweetPerHour);
+    topic.color = topicColor(getTime(topic));
+  }
+
   const pos = await tsne(
     data.words.map(({ vec }) => vec),
     10
   );
-  const circleSize = d3
+  const wordCircleSize = d3
     .scaleSqrt()
     .domain(d3.extent(data.words, (item) => item.count))
     .range([10, 50]);
@@ -52,7 +67,7 @@ export async function loadData() {
     const [x, y] = pos[i];
     word.x = 10000 * x;
     word.y = 10000 * y;
-    word.r = circleSize(word.count);
+    word.r = wordCircleSize(word.count);
     word.fontSize = optimalFontSize(word.word, word.r);
   });
   const { clusters: wordClusters } = await dbscan(
@@ -72,7 +87,6 @@ export async function loadData() {
     }
   });
 
-  data.topicClusters = topicClusters;
   data.wordClusters = wordClusters;
   return data;
 }

@@ -2,14 +2,13 @@ import { useDispatch, useSelector } from "react-redux";
 import * as d3 from "d3";
 import slice from "../slice";
 import { Responsive } from "./Responsive.js";
+import { HorizontalField } from "./HorizontalField.js";
 
 function WordBubbleChart({ width, height }) {
   const words = useSelector(({ words }) => words);
-  const selectedTopics = useSelector(
-    ({ selectedTopic, topics, topicClusters }) =>
-      selectedTopic == null ? [] : topicClusters[topics[selectedTopic].cluster]
-  );
+  const selectedTopics = useSelector(({ selectedTopics }) => selectedTopics);
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
+
   const margin = {
     left: 10,
     right: 10,
@@ -19,7 +18,7 @@ function WordBubbleChart({ width, height }) {
   const contentWidth = width - margin.left - margin.right;
   const contentHeight = height - margin.top - margin.bottom;
 
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  const color = d3.scaleOrdinal(d3.schemePaired);
   for (const word of words) {
     color(word.cluster);
   }
@@ -65,6 +64,7 @@ function WordBubbleChart({ width, height }) {
                         ? "lightgray"
                         : color(item.cluster)
                     }
+                    opacity="0.7"
                   />
                   <text
                     className="is-unselectable"
@@ -84,54 +84,13 @@ function WordBubbleChart({ width, height }) {
   );
 }
 
-function HorizontalField({ label, children }) {
-  return (
-    <div className="field is-horizontal">
-      <div className="field-label is-normal">
-        <label className="label">{label}</label>
-      </div>
-      <div className="field-body">{children}</div>
-    </div>
-  );
-}
-
 export function WordBubbleView({ words, selectedTopics }) {
   const dispatch = useDispatch();
-  const selectedTopic = useSelector(({ selectedTopic }) => selectedTopic);
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
-  const topics = useSelector(({ topics }) => topics);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
-        <HorizontalField label="Selected Topic">
-          <div className="field has-addons">
-            <div className="control is-expanded">
-              <input
-                className="input"
-                type="number"
-                min="0"
-                max={topics.length - 1}
-                value={selectedTopic || ""}
-                onChange={(event) => {
-                  dispatch(slice.actions.selectTopic(+event.target.value));
-                }}
-              />
-            </div>
-            <div className="control">
-              <button
-                className="button"
-                onClick={() => {
-                  dispatch(slice.actions.selectTopic(null));
-                }}
-              >
-                <span className="icon">
-                  <i className="fas fa-times" />
-                </span>
-              </button>
-            </div>
-          </div>
-        </HorizontalField>
-        <HorizontalField label="Min word count">
+        <HorizontalField label="Min Word Count">
           <div className="field">
             <div className="control">
               <input
