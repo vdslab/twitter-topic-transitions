@@ -5,6 +5,8 @@ import { Responsive } from "./Responsive.js";
 import { HorizontalField } from "./HorizontalField.js";
 
 function WordBubbleChart({ width, height }) {
+  const dispatch = useDispatch();
+  const topics = useSelector(({ topics }) => topics);
   const words = useSelector(({ words }) => words);
   const selectedTopics = useSelector(({ selectedTopics }) => selectedTopics);
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
@@ -54,6 +56,17 @@ function WordBubbleChart({ width, height }) {
                     transitionProperty: "opacity",
                     transitionDuration: "1s",
                     transitionTimingFunction: "ease",
+                  }}
+                  onClick={() => {
+                    dispatch(
+                      slice.actions.selectTopics(
+                        topics
+                          .filter(
+                            ({ id }) => item.hourlyCount[id] >= minWordCount
+                          )
+                          .map(({ id }) => id)
+                      )
+                    );
                   }}
                 >
                   <title>{`${item.word}`}</title>
