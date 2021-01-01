@@ -8,6 +8,7 @@ const slice = createSlice({
     topicClusters: [],
     wordClusters: [],
     selectedTopic: null,
+    minWordCount: 1,
   },
   reducers: {
     loadData(state, action) {
@@ -15,6 +16,9 @@ const slice = createSlice({
     },
     selectTopic(state, action) {
       return Object.assign({}, state, { selectedTopic: action.payload });
+    },
+    updateMinWordCount(state, action) {
+      return Object.assign({}, state, { minWordCount: action.payload });
     },
   },
 });

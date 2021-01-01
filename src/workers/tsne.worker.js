@@ -1,9 +1,9 @@
 import TSNE from "tsne-js";
 
-export async function tsne(data) {
+export async function tsne(data, perplexity) {
   const model = new TSNE({
     dim: 2,
-    perplexity: 50.0,
+    perplexity,
     nIter: 10,
     metric: "euclidean",
   });

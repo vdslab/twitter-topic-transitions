@@ -3,127 +3,156 @@ import * as d3 from "d3";
 import slice from "../slice";
 import { Responsive } from "./Responsive.js";
 
-const WordBubbleChart = ({ width, height }) => {
+function WordBubbleChart({ width, height }) {
   const words = useSelector(({ words }) => words);
   const selectedTopics = useSelector(
     ({ selectedTopic, topics, topicClusters }) =>
       selectedTopic == null ? [] : topicClusters[topics[selectedTopic].cluster]
   );
+  const minWordCount = useSelector(({ minWordCount }) => minWordCount);
   const margin = {
-    left: 50,
-    right: 50,
-    top: 50,
-    bottom: 50,
+    left: 10,
+    right: 10,
+    top: 10,
+    bottom: 10,
   };
   const contentWidth = width - margin.left - margin.right;
   const contentHeight = height - margin.top - margin.bottom;
 
   const color = d3.scaleOrdinal(d3.schemeCategory10);
+  for (const word of words) {
+    color(word.cluster);
+  }
 
-  const circleSize = d3
-    .scaleSqrt()
-    .domain(d3.extent(words, (item) => item.count))
-    .range([10, 30]);
+  const maxSize = Math.max(
+    Math.min(...words.map(({ x, r }) => x - r)),
+    Math.max(...words.map(({ x, r }) => x + r)),
+    Math.min(...words.map(({ y, r }) => y - r)),
+    Math.max(...words.map(({ y, r }) => y + r))
+  );
+  const scale = Math.min(contentWidth, contentHeight) / 2 / maxSize;
 
-  const circleOpacity = d3
-    .scaleLinear()
-    .domain(d3.extent(words, (item) => item.count))
-    .range([0.5, 1]);
-
-  const xScale = d3
-    .scaleLinear()
-    .domain(d3.extent(words, (item) => item.x))
-    .range([0, contentWidth]);
-
-  const yScale = d3
-    .scaleLinear()
-    .domain(
-      d3.extent(words, (item) => item.y),
-      d3.min(words, (item) => item.y)
-    )
-    .range([contentHeight, 0]);
-
-  const filteredWords = words.filter(({ hourlyCount }) =>
-    selectedTopics.every((topicId) => hourlyCount[topicId] > 0)
+  const targetWords = new Set(
+    words
+      .filter(({ hourlyCount }) =>
+        selectedTopics.every((topicId) => hourlyCount[topicId] >= minWordCount)
+      )
+      .map(({ id }) => id)
   );
   return (
     <svg viewBox={`0 0 ${width} ${height}`}>
       <g transform={`translate(${margin.left}, ${margin.top})`}>
-        {filteredWords.map((item, i) => {
-          return (
-            <g
-              key={i}
-              className="is-clickable"
-              transform={`translate(${xScale(item.x)}, ${yScale(item.y)})`}
-            >
-              <title>{`${item.word}`}</title>
-              <circle
-                r={circleSize(item.count) * 1.2}
-                fill={
-                  item.cluster === undefined ? "lightgray" : color(item.cluster)
-                }
-                opacity={circleOpacity(item.count)}
-              />
-              <text
-                fontSize={`${circleSize(item.count) * 0.6}px`}
-                textAnchor="middle"
-                dominantBaseline="central"
-              >
-                {item.word}
-              </text>
-            </g>
-          );
-        })}
+        <g transform={`translate(${contentWidth / 2},${contentHeight / 2})`}>
+          <g transform={`scale(${scale})`}>
+            {words.map((item) => {
+              return (
+                <g
+                  key={item.id}
+                  className="is-clickable"
+                  transform={`translate(${item.x}, ${item.y})`}
+                  opacity={targetWords.has(item.id) ? 1 : 0.1}
+                  style={{
+                    transitionProperty: "opacity",
+                    transitionDuration: "1s",
+                    transitionTimingFunction: "ease",
+                  }}
+                >
+                  <title>{`${item.word}`}</title>
+                  <circle
+                    r={item.r}
+                    fill={
+                      item.cluster === undefined
+                        ? "lightgray"
+                        : color(item.cluster)
+                    }
+                  />
+                  <text
+                    className="is-unselectable"
+                    fontSize={item.fontSize}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                  >
+                    {item.word}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        </g>
       </g>
     </svg>
   );
-};
+}
+
+function HorizontalField({ label, children }) {
+  return (
+    <div className="field is-horizontal">
+      <div className="field-label is-normal">
+        <label className="label">{label}</label>
+      </div>
+      <div className="field-body">{children}</div>
+    </div>
+  );
+}
 
 export function WordBubbleView({ words, selectedTopics }) {
   const dispatch = useDispatch();
   const selectedTopic = useSelector(({ selectedTopic }) => selectedTopic);
+  const minWordCount = useSelector(({ minWordCount }) => minWordCount);
   const topics = useSelector(({ topics }) => topics);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
-        <div className="field is-horizontal">
-          <div className="field-label is-normal">
-            <label className="label">Selected Topic</label>
-          </div>
-          <div className="field-body">
-            <div className="field has-addons">
-              <div className="control is-expanded">
-                <input
-                  className="input"
-                  type="number"
-                  min="0"
-                  max={topics.length - 1}
-                  value={selectedTopic || ""}
-                  onChange={(event) => {
-                    dispatch(slice.actions.selectTopic(+event.target.value));
-                  }}
-                />
-              </div>
-              <div className="control">
-                <button
-                  className="button"
-                  onClick={() => {
-                    dispatch(slice.actions.selectTopic(null));
-                  }}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                </button>
-              </div>
+        <HorizontalField label="Selected Topic">
+          <div className="field has-addons">
+            <div className="control is-expanded">
+              <input
+                className="input"
+                type="number"
+                min="0"
+                max={topics.length - 1}
+                value={selectedTopic || ""}
+                onChange={(event) => {
+                  dispatch(slice.actions.selectTopic(+event.target.value));
+                }}
+              />
+            </div>
+            <div className="control">
+              <button
+                className="button"
+                onClick={() => {
+                  dispatch(slice.actions.selectTopic(null));
+                }}
+              >
+                <span className="icon">
+                  <i className="fas fa-times" />
+                </span>
+              </button>
             </div>
           </div>
-        </div>
+        </HorizontalField>
+        <HorizontalField label="Min word count">
+          <div className="field">
+            <div className="control">
+              <input
+                className="input"
+                type="number"
+                min="1"
+                value={minWordCount}
+                onChange={(event) => {
+                  dispatch(
+                    slice.actions.updateMinWordCount(+event.target.value)
+                  );
+                }}
+              />
+            </div>
+          </div>
+        </HorizontalField>
       </div>
       <div
         style={{
           position: "absolute",
-          top: "64px",
+          top: "116px",
           right: 0,
           bottom: 0,
           left: 0,

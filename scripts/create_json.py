@@ -32,9 +32,11 @@ def main():
         g = t['group_id']
         group_times[g].append(t['created_at'])
         for word in t['words']:
-            if word['pos'] not in ['名詞', '動詞', '形容詞']:
+            if word['pos'] not in ['名詞']:
                 continue
             word = word['base']
+            if len(word) <= 1:
+                continue
             if word not in group_words[g]:
                 group_words[g][word] = 0
             group_words[g][word] += 1
@@ -44,7 +46,7 @@ def main():
         for word in group_words[i]:
             if word not in words:
                 words[word] = 0
-            words[word] += 1
+            words[word] += group_words[i][word]
     words = [{'word': w, 'count': c} for w, c in words.items()]
     words.sort(key=lambda w: w['count'], reverse=True)
     words = [w for w in words][:300]
@@ -54,6 +56,7 @@ def main():
     topic_coordinates = TSNE(
         perplexity=5, random_state=args.seed).fit_transform(topic_vec)
     topics = [{
+        'id': i,
         'time': min(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
         'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
         'tweetCount': args.chunk,
@@ -61,8 +64,13 @@ def main():
         'x': float(x),
         'y': float(y)
     } for i, (x, y) in enumerate(topic_coordinates)]
-    words = [{'word': w['word'], 'count': w['count'], 'hourlyCount': [group_words[i].get(
-        w['word'], 0) for i in range(num_groups)], 'vec': [float(v) for v in model.wv[word]]} for w in words]
+    words = [{
+        'id': i,
+        'word': w['word'],
+        'count': w['count'],
+        'hourlyCount': [group_words[i].get(w['word'], 0) for i in range(num_groups)],
+        'vec': [float(v) for v in model.wv[word]]
+    } for i, w in enumerate(words)]
     obj = {
         'topics': topics,
         'words': words,
