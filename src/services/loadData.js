@@ -41,9 +41,13 @@ export async function loadData() {
   const response = await fetch("data.json");
   const data = await response.json();
 
-  const topicColor = d3
+  const timeColor = d3
     .scaleSequential(d3.interpolateWarm)
-    .domain(d3.extent(data.topics, getTime));
+    .domain(d3.extent(data.dailyCount, getTime));
+  for (const row of data.dailyCount) {
+    row.color = timeColor(getTime(row));
+  }
+
   const topicCircleSize = d3
     .scaleSqrt()
     .domain(d3.extent(data.topics, tweetPerHour))
@@ -51,7 +55,7 @@ export async function loadData() {
   for (const topic of data.topics) {
     topic.tweetPerHour = tweetPerHour(topic);
     topic.r = topicCircleSize(topic.tweetPerHour);
-    topic.color = topicColor(getTime(topic));
+    topic.color = timeColor(getTime(topic));
   }
 
   const pos = await tsne(

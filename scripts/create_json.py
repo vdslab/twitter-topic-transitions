@@ -5,7 +5,7 @@ from itertools import count
 from gensim.models.doc2vec import Doc2Vec
 from sklearn.manifold import TSNE
 
-datetime_format = '%Y%m%d%H'
+datetime_format = '%a %b %d %H:%M:%S %z %Y'
 
 
 def main():
@@ -57,8 +57,8 @@ def main():
         perplexity=5, random_state=args.seed).fit_transform(topic_vec)
     topics = [{
         'id': i,
-        'time': min(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
-        'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, '%a %b %d %H:%M:%S %z %Y')),
+        'time': min(group_times[i], key=lambda s: datetime.strptime(s, datetime_format)),
+        'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, datetime_format)),
         'tweetCount': args.chunk,
         'vec': [float(v) for v in model.docvecs['twhour{}'.format(i)]],
         'x': float(x),
@@ -68,12 +68,34 @@ def main():
         'id': i,
         'word': w['word'],
         'count': w['count'],
-        'hourlyCount': [group_words[i].get(w['word'], 0) for i in range(num_groups)],
+        'topicCount': [group_words[i].get(w['word'], 0) for i in range(num_groups)],
         'vec': [float(v) for v in model.wv[word]]
     } for i, w in enumerate(words)]
+
+    word_index = {w['word']: i for i, w in enumerate(words)}
+    min_datetime = datetime.strptime(topics[0]['time'], datetime_format)
+    min_datetime = datetime(min_datetime.year, min_datetime.month,
+                            min_datetime.day, tzinfo=min_datetime.tzinfo)
+    max_datetime = datetime.strptime(topics[-1]['stopTime'], datetime_format)
+    max_datetime = datetime(max_datetime.year, max_datetime.month,
+                            max_datetime.day, tzinfo=max_datetime.tzinfo)
+    times = [min_datetime + timedelta(days=i)
+             for i in range((max_datetime - min_datetime).days + 1)]
+    times = [{'time': t.strftime(datetime_format), 'tweetCount': 0, 'words': [0 for _ in range(len(words))]}
+             for t in times]
+    for t in corpus:
+        d = datetime.strptime(t['created_at'], datetime_format)
+        i = (d - min_datetime).days
+        times[i]['tweetCount'] += 1
+        for word in t['words']:
+            word = word['base']
+            if word in word_index:
+                times[i]['words'][word_index[word]] += 1
+
     obj = {
         'topics': topics,
         'words': words,
+        'dailyCount': times,
     }
     json.dump(obj, open(args.output, 'w'), ensure_ascii=False)
 

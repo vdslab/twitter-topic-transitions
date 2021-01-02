@@ -4,6 +4,7 @@ const slice = createSlice({
   initialState: {
     topics: [],
     words: [],
+    dailyCount: [],
     topicClusters: [],
     wordClusters: [],
     selectionRadius: 3,

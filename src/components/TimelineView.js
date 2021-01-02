@@ -3,30 +3,31 @@ import * as d3 from "d3";
 import { Responsive } from "./Responsive.js";
 
 function TimelineChart({ width, height }) {
-  const topics = useSelector(({ topics }) => topics);
-  const selectedTopics = useSelector(
-    ({ selectedTopics }) => new Set(selectedTopics)
+  const dailyCount = useSelector(({ dailyCount }) => dailyCount);
+  const selectedTopics = useSelector(({ topics, selectedTopics }) =>
+    selectedTopics.map((id) => topics[id])
   );
 
   const margin = {
     top: 10,
-    right: 20,
-    bottom: 30,
-    left: 40,
+    right: 10,
+    bottom: 50,
+    left: 60,
   };
   const contentWidth = width - margin.left - margin.right;
   const contentHeight = height - margin.top - margin.bottom;
 
   const axisColor = "#363636";
+  const timeFormat = d3.timeFormat("%Y-%m-%d");
 
   const xScale = d3
-    .scaleLinear()
-    .domain([0, topics.length])
+    .scaleTime()
+    .domain(d3.extent(dailyCount, (item) => new Date(item.time)))
     .range([0, contentWidth])
     .nice();
   const heightScale = d3
     .scaleLinear()
-    .domain(d3.extent(topics, (topic) => topic.tweetPerHour))
+    .domain(d3.extent(dailyCount, (item) => item.tweetCount))
     .range([0, contentHeight])
     .nice();
 
@@ -40,16 +41,18 @@ function TimelineChart({ width, height }) {
               return (
                 <g key={i} transform={`translate(${xScale(x)},0)`}>
                   <line x1="0" y1="0" x2="0" y2="5" stroke={axisColor} />
-                  <text
-                    y="7"
-                    textAnchor="middle"
-                    dominantBaseline="text-before-edge"
-                    fontWeight="700"
-                    fontSize="12"
-                    fill={axisColor}
-                  >
-                    {x}
-                  </text>
+                  <g transform="rotate(-30)">
+                    <text
+                      x="-5"
+                      textAnchor="end"
+                      dominantBaseline="text-before-edge"
+                      fontWeight="700"
+                      fontSize="10"
+                      fill={axisColor}
+                    >
+                      {timeFormat(x)}
+                    </text>
+                  </g>
                 </g>
               );
             })}
@@ -81,27 +84,32 @@ function TimelineChart({ width, height }) {
           </g>
         </g>
         <g>
-          {topics.map((topic, i) => {
+          {dailyCount.map((item, i) => {
+            const t1 = new Date(item.time);
+            const t2 = new Date(t1.getTime() + 86400000);
+            const active =
+              selectedTopics.length === 0 ||
+              selectedTopics.some((topic) => {
+                const start = new Date(topic.time);
+                const stop = new Date(topic.stopTime);
+                return t1 <= stop && start <= t2;
+              });
             return (
               <g
-                key={topic.id}
-                opacity={
-                  selectedTopics.size === 0 || selectedTopics.has(topic.id)
-                    ? 1
-                    : 0.1
-                }
+                key={item.time}
                 style={{
                   transitionProperty: "opacity",
                   transitionDuration: "1s",
                   transitionTimingFunction: "ease",
                 }}
+                opacity={active ? 1 : 0.1}
               >
                 <rect
-                  x={xScale(i)}
-                  y={contentHeight - heightScale(topic.tweetPerHour)}
-                  width={xScale(i + 1) - xScale(i)}
-                  height={heightScale(topic.tweetPerHour)}
-                  fill={topic.color}
+                  x={xScale(new Date(item.time))}
+                  y={contentHeight - heightScale(item.tweetCount)}
+                  width={contentWidth / dailyCount.length + 1}
+                  height={heightScale(item.tweetCount)}
+                  fill={item.color}
                 />
               </g>
             );

@@ -43,6 +43,7 @@ function ProjectionChart({ width, height }) {
     .x((item) => item.x)
     .y((item) => item.y);
   const { x, y, s } = scale(topics, contentWidth, contentHeight);
+  const timeFormat = d3.timeFormat("%Y-%m-%d %H:%M");
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`}>
@@ -60,7 +61,6 @@ function ProjectionChart({ width, height }) {
               </g>
               <g>
                 {topics.map((item, i) => {
-                  const date = new Date(item.time);
                   return (
                     <g
                       key={i}
@@ -98,10 +98,8 @@ function ProjectionChart({ width, height }) {
                     >
                       <circle r={item.r} opacity="0.5" fill={item.color}>
                         <title>
-                          {date.getFullYear()}/
-                          {(date.getMonth() + 1).toString().padStart(2, "0")}/
-                          {date.getDate().toString().padStart(2, "0")}-
-                          {date.getHours().toString().padStart(2, "0")}
+                          {timeFormat(new Date(item.time))}-
+                          {timeFormat(new Date(item.stopTime))}
                         </title>
                       </circle>
                     </g>

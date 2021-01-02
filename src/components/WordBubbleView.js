@@ -35,8 +35,8 @@ function WordBubbleChart({ width, height }) {
 
   const targetWords = new Set(
     words
-      .filter(({ hourlyCount }) =>
-        selectedTopics.every((topicId) => hourlyCount[topicId] >= minWordCount)
+      .filter(({ topicCount }) =>
+        selectedTopics.every((topicId) => topicCount[topicId] >= minWordCount)
       )
       .map(({ id }) => id)
   );
@@ -62,7 +62,7 @@ function WordBubbleChart({ width, height }) {
                       slice.actions.selectTopics(
                         topics
                           .filter(
-                            ({ id }) => item.hourlyCount[id] >= minWordCount
+                            ({ id }) => item.topicCount[id] >= minWordCount
                           )
                           .map(({ id }) => id)
                       )
