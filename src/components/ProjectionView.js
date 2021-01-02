@@ -1,30 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import * as d3 from "d3";
-import { dbscan } from "../services";
+import { dbscan, scale } from "../services";
 import slice from "../slice.js";
 import { Responsive } from "./Responsive.js";
 import { HorizontalField } from "./HorizontalField.js";
-
-function scale(topics, screenWidth, screenHeight) {
-  if (topics.length === 0) {
-    return {
-      x: 0,
-      y: 0,
-      s: 1,
-    };
-  }
-  const left = Math.min(...topics.map(({ x, r }) => x - r));
-  const right = Math.max(...topics.map(({ x, r }) => x + r));
-  const top = Math.min(...topics.map(({ y, r }) => y - r));
-  const bottom = Math.max(...topics.map(({ y, r }) => y + r));
-  const width = right - left;
-  const height = bottom - top;
-  return {
-    x: left + width / 2,
-    y: top + height / 2,
-    s: Math.min(screenWidth / width, screenHeight / height),
-  };
-}
 
 function ProjectionChart({ width, height }) {
   const dispatch = useDispatch();
@@ -55,7 +34,7 @@ function ProjectionChart({ width, height }) {
                 <path
                   fill="none"
                   stroke="lightgray"
-                  opacity="0.7"
+                  opacity="0.5"
                   d={line(topics)}
                 />
               </g>
@@ -96,7 +75,7 @@ function ProjectionChart({ width, height }) {
                         }
                       }}
                     >
-                      <circle r={item.r} opacity="0.5" fill={item.color}>
+                      <circle r={item.r} opacity="0.7" fill={item.color}>
                         <title>
                           {timeFormat(new Date(item.time))}-
                           {timeFormat(new Date(item.stopTime))}

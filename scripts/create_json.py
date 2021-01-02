@@ -1,4 +1,6 @@
 import json
+import math
+import re
 from argparse import ArgumentParser
 from datetime import datetime, timedelta, timezone
 from itertools import count
@@ -6,6 +8,7 @@ from gensim.models.doc2vec import Doc2Vec
 from sklearn.manifold import TSNE
 
 datetime_format = '%a %b %d %H:%M:%S %z %Y'
+pattern_date = re.compile(r'[0-9]+月[0-9]+日')
 
 
 def main():
@@ -25,52 +28,69 @@ def main():
 
     corpus = [json.loads(row.strip()) for row in open(args.corpus)]
     num_groups = max(t['group_id'] for t in corpus) + 1
-    group_words = [{} for _ in range(num_groups)]
-    group_times = [[] for _ in range(num_groups)]
 
+    group_times = [[] for _ in range(num_groups)]
     for t in corpus:
         g = t['group_id']
         group_times[g].append(t['created_at'])
+
+    target_words = set()
+    for t in corpus:
         for word in t['words']:
             if word['pos'] not in ['名詞']:
                 continue
             word = word['base']
             if len(word) <= 1:
                 continue
-            if word not in group_words[g]:
-                group_words[g][word] = 0
-            group_words[g][word] += 1
+            if pattern_date.match(word):
+                continue
+            target_words.add(word)
 
-    words = {}
-    for i in range(num_groups):
-        for word in group_words[i]:
-            if word not in words:
-                words[word] = 0
-            words[word] += group_words[i][word]
-    words = [{'word': w, 'count': c} for w, c in words.items()]
-    words.sort(key=lambda w: w['count'], reverse=True)
-    words = [w for w in words][:300]
+    tf = [{w: 0 for w in target_words} for _ in range(num_groups)]
+    idf = {w: set() for w in target_words}
+    for t in corpus:
+        g = t['group_id']
+        for word in t['words']:
+            word = word['base']
+            if word in target_words:
+                tf[g][word] += 1
+                idf[word].add(g)
+    for word in idf:
+        idf[word] = math.log(num_groups / len(idf[word]))
 
-    topic_vec = [model.docvecs['twhour{}'.format(
-        i)] for i in range(num_groups)]
-    topic_coordinates = TSNE(
-        perplexity=5, random_state=args.seed).fit_transform(topic_vec)
+    keyphrase = {w: 0 for w in target_words}
+    for g in range(num_groups):
+        sum_tf = sum(c for c in tf[g].values())
+        words = [(c / sum_tf * idf[w], w)
+                 for w, c in tf[g].items()]
+        words.sort(key=lambda row: row[0], reverse=True)
+        for (_, w) in words[:5]:
+            keyphrase[w] += 1
+    words = [w for w in target_words if keyphrase[w] >= 1]
+    words.sort(key=lambda w: keyphrase[w], reverse=True)
+    words = words[:500]
+
+    topic_coordinates = TSNE(perplexity=5, random_state=args.seed)\
+        .fit_transform([model.docvecs['twhour{}'.format(i)] for i in range(num_groups)])
     topics = [{
         'id': i,
         'time': min(group_times[i], key=lambda s: datetime.strptime(s, datetime_format)),
         'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, datetime_format)),
         'tweetCount': args.chunk,
-        'vec': [float(v) for v in model.docvecs['twhour{}'.format(i)]],
         'x': float(x),
         'y': float(y)
     } for i, (x, y) in enumerate(topic_coordinates)]
+
+    word_coordinates = TSNE(perplexity=10, random_state=args.seed)\
+        .fit_transform([model.wv[w] for w in words])
     words = [{
         'id': i,
-        'word': w['word'],
-        'count': w['count'],
-        'topicCount': [group_words[i].get(w['word'], 0) for i in range(num_groups)],
-        'vec': [float(v) for v in model.wv[word]]
-    } for i, w in enumerate(words)]
+        'word': w,
+        'count': sum(tf[g].get(w, 0) for g in range(num_groups)),
+        'topicCount': [tf[g].get(w, 0) for g in range(num_groups)],
+        'x': float(x),
+        'y': float(y),
+    } for i, (w, (x, y)) in enumerate(zip(words, word_coordinates))]
 
     word_index = {w['word']: i for i, w in enumerate(words)}
     min_datetime = datetime.strptime(topics[0]['time'], datetime_format)

@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { dbscan, layout, tsne } from "./algorithms";
+import { dbscan, layout } from "./algorithms";
 
 const optimalFontSize = (word, r, fontFamily, fontWeight) => {
   const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -51,43 +51,40 @@ export async function loadData() {
   const topicCircleSize = d3
     .scaleSqrt()
     .domain(d3.extent(data.topics, tweetPerHour))
-    .range([1, 5]);
+    .range([0.5, 4]);
   for (const topic of data.topics) {
     topic.tweetPerHour = tweetPerHour(topic);
     topic.r = topicCircleSize(topic.tweetPerHour);
     topic.color = timeColor(getTime(topic));
   }
 
-  const pos = await tsne(
-    data.words.map(({ vec }) => vec),
-    10
-  );
   const wordCircleSize = d3
     .scaleSqrt()
     .domain(d3.extent(data.words, (item) => item.count))
     .range([10, 50]);
-  const eps = 300;
   data.words.forEach((word, i) => {
-    const [x, y] = pos[i];
-    word.x = 10000 * x;
-    word.y = 10000 * y;
+    word.x *= 10;
+    word.y *= 10;
     word.r = wordCircleSize(word.count);
-    word.fontSize = optimalFontSize(word.word, word.r);
+    word.fontSize = optimalFontSize(word.word, word.r, "700");
   });
+
+  const eps = 20;
   const { clusters: wordClusters } = await dbscan(
     data.words.map(({ x, y }) => [x, y]),
     eps,
     2
   );
-  const pos2 = await layout(data.words, eps);
   wordClusters.forEach((cluster, i) => {
     for (const wordId of cluster) {
       data.words[wordId].cluster = i;
     }
   });
+
+  const pos = await layout(data.words, eps);
   const wordColor = d3.scaleOrdinal(d3.schemePaired);
   data.words.forEach((word, i) => {
-    const { x, y } = pos2[i];
+    const { x, y } = pos[i];
     word.x = x;
     word.y = y;
     word.color =

@@ -14,7 +14,6 @@ export function layout(words, eps) {
 
   const simulation = d3
     .forceSimulation(words)
-    .force("charge", d3.forceManyBody().strength(10))
     .force(
       "link",
       d3.forceLink(links).distance(({ distance }) => distance)

@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import { scale } from "../services";
 import slice from "../slice";
 import { Responsive } from "./Responsive.js";
 import { HorizontalField } from "./HorizontalField.js";
@@ -20,62 +21,58 @@ function WordBubbleChart({ width, height }) {
   };
   const contentWidth = width - margin.left - margin.right;
   const contentHeight = height - margin.top - margin.bottom;
+  const { x, y, s } = scale(words, contentWidth, contentHeight);
 
-  const maxSize = Math.max(
-    Math.min(...words.map(({ x, r }) => x - r)),
-    Math.max(...words.map(({ x, r }) => x + r)),
-    Math.min(...words.map(({ y, r }) => y - r)),
-    Math.max(...words.map(({ y, r }) => y + r))
-  );
-  const scale = Math.min(contentWidth, contentHeight) / 2 / maxSize;
-
-  const targetWords = new Set(
-    words
-      .filter(({ topicCount }) =>
-        selectedTopics.every((topicId) => topicCount[topicId] >= minWordCount)
-      )
-      .map(({ id }) => id)
-  );
   return (
     <svg viewBox={`0 0 ${width} ${height}`}>
       <g transform={`translate(${margin.left}, ${margin.top})`}>
         <g transform={`translate(${contentWidth / 2},${contentHeight / 2})`}>
-          <g transform={`scale(${scale})`}>
-            {words.map((item) => {
-              return (
-                <g
-                  key={item.id}
-                  className="is-clickable"
-                  opacity={targetWords.has(item.id) ? 1 : 0.1}
-                  style={{
-                    transitionProperty: "opacity",
-                    transitionDuration: "1s",
-                    transitionTimingFunction: "ease",
-                  }}
-                  transform={`translate(${item.x}, ${item.y})`}
-                  onClick={() => {
-                    dispatch(slice.actions.toggleWord(item.id));
-                  }}
-                >
-                  <title>{`${item.word}`}</title>
-                  <circle r={item.r} fill={item.color} opacity="0.7" />
-                  <circle
-                    r={item.r}
-                    fill="none"
-                    stroke={selectedWords.has(item.id) ? "#444" : "none"}
-                    strokeWidth="2"
-                  />
-                  <text
-                    className="is-unselectable"
-                    fontSize={item.fontSize}
-                    textAnchor="middle"
-                    dominantBaseline="central"
+          <g transform={`scale(${s})`}>
+            <g transform={`translate(${-x},${-y})`}>
+              {words.map((item) => {
+                return (
+                  <g
+                    key={item.id}
+                    className="is-clickable"
+                    opacity={
+                      selectedTopics.length === 0
+                        ? 1
+                        : selectedTopics.filter(
+                            (id) => item.topicCount[id] >= minWordCount
+                          ).length / selectedTopics.length
+                    }
+                    style={{
+                      transitionProperty: "opacity",
+                      transitionDuration: "1s",
+                      transitionTimingFunction: "ease",
+                    }}
+                    transform={`translate(${item.x}, ${item.y})`}
+                    onClick={() => {
+                      dispatch(slice.actions.toggleWord(item.id));
+                    }}
                   >
-                    {item.word}
-                  </text>
-                </g>
-              );
-            })}
+                    <title>{`${item.word}`}</title>
+                    <circle r={item.r} fill={item.color} opacity="0.7" />
+                    <circle
+                      r={item.r}
+                      fill="none"
+                      stroke={selectedWords.has(item.id) ? "#363636" : "none"}
+                      strokeWidth="2"
+                    />
+                    <text
+                      className="is-unselectable"
+                      fontSize={item.fontSize}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontWeight="700"
+                      fill="#363636"
+                    >
+                      {item.word}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
           </g>
         </g>
       </g>
@@ -110,7 +107,7 @@ export function WordBubbleView({ words, selectedTopics }) {
       <div
         style={{
           position: "absolute",
-          top: "116px",
+          top: "64px",
           right: 0,
           bottom: 0,
           left: 0,

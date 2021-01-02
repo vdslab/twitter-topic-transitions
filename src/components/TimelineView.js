@@ -16,7 +16,7 @@ function TimelineChart({ width, height }) {
   );
 
   const margin = {
-    top: 10,
+    top: 20,
     right: 60,
     bottom: 50,
     left: 60,
@@ -119,7 +119,6 @@ function TimelineChart({ width, height }) {
                 onClick={() => {
                   dispatch(slice.actions.toggleWord(word.id));
                 }}
-                opacity="0.9"
               >
                 <path
                   style={{
@@ -129,11 +128,46 @@ function TimelineChart({ width, height }) {
                   }}
                   d={line(dailyCount)}
                   fill="none"
+                  opacity="0.9"
                   stroke={selectedWords.has(word.id) ? word.color : "none"}
                   strokeWidth="5"
                 >
                   <title>{word.word}</title>
                 </path>
+              </g>
+            );
+          })}
+        </g>
+        <g>
+          {words.map((word) => {
+            if (!selectedWords.has(word.id)) {
+              return null;
+            }
+            const maxIndex = dailyCount.reduce(
+              (x, item, i) =>
+                item.words[word.id] > dailyCount[x].words[word.id] ? i : x,
+              0
+            );
+            const maxItem = dailyCount[maxIndex];
+            return (
+              <g
+                key={word.id}
+                className="is-clickable"
+                onClick={() => {
+                  dispatch(slice.actions.toggleWord(word.id));
+                }}
+              >
+                <text
+                  x={xScale(new Date(maxItem.time))}
+                  y={lineYScale(maxItem.words[word.id])}
+                  textAnchor="middle"
+                  dominantBaseline="text-after-edge"
+                  fontWeight="700"
+                  fontSize="12"
+                  fill={axisColor}
+                >
+                  {word.word}
+                </text>
               </g>
             );
           })}
@@ -169,6 +203,7 @@ function TimelineChart({ width, height }) {
             dominantBaseline="central"
             fontWeight="700"
             fontSize="16"
+            fill={axisColor}
           >
             Tweet Count
           </text>
@@ -205,6 +240,7 @@ function TimelineChart({ width, height }) {
             dominantBaseline="central"
             fontWeight="700"
             fontSize="16"
+            fill={axisColor}
           >
             Word Occurence
           </text>
