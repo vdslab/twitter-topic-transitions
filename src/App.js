@@ -32,6 +32,16 @@ const App = () => {
                 >
                   Clear Selection
                 </button>
+                <button
+                  className="button"
+                  onClick={() => {
+                    document.querySelector("#content").requestFullscreen();
+                  }}
+                >
+                  <span className="icon">
+                    <i className="fas fa-expand" />
+                  </span>
+                </button>
               </div>
             </div>
           </div>
