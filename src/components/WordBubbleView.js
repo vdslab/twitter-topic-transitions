@@ -47,22 +47,19 @@ function WordBubbleChart({ width, height }) {
                 <g
                   key={item.id}
                   className="is-clickable"
+                  opacity={targetWords.has(item.id) ? 1 : 0.1}
+                  style={{
+                    transitionProperty: "opacity",
+                    transitionDuration: "1s",
+                    transitionTimingFunction: "ease",
+                  }}
                   transform={`translate(${item.x}, ${item.y})`}
                   onClick={() => {
                     dispatch(slice.actions.toggleWord(item.id));
                   }}
                 >
                   <title>{`${item.word}`}</title>
-                  <circle
-                    r={item.r}
-                    fill={item.color}
-                    opacity={targetWords.has(item.id) ? 0.9 : 0.1}
-                    style={{
-                      transitionProperty: "opacity",
-                      transitionDuration: "1s",
-                      transitionTimingFunction: "ease",
-                    }}
-                  />
+                  <circle r={item.r} fill={item.color} opacity="0.7" />
                   <circle
                     r={item.r}
                     fill="none"

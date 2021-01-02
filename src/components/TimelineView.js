@@ -5,6 +5,7 @@ import { Responsive } from "./Responsive.js";
 
 function TimelineChart({ width, height }) {
   const dispatch = useDispatch();
+  const topics = useSelector(({ topics }) => topics);
   const words = useSelector(({ words }) => words);
   const dailyCount = useSelector(({ dailyCount }) => dailyCount);
   const selectedTopics = useSelector(({ topics, selectedTopics }) =>
@@ -75,11 +76,25 @@ function TimelineChart({ width, height }) {
                 opacity={active ? 1 : 0.1}
               >
                 <rect
+                  className="is-clickable"
                   x={xScale(new Date(item.time)) - barWidth / 2}
                   y={contentHeight - barHeightScale(item.tweetCount)}
                   width={barWidth}
                   height={barHeightScale(item.tweetCount)}
                   fill={item.color}
+                  onClick={() => {
+                    dispatch(
+                      slice.actions.selectTopics(
+                        topics
+                          .filter((topic) => {
+                            const start = new Date(topic.time);
+                            const stop = new Date(topic.stopTime);
+                            return t1 <= stop && start <= t2;
+                          })
+                          .map(({ id }) => id)
+                      )
+                    );
+                  }}
                 />
               </g>
             );
@@ -112,7 +127,9 @@ function TimelineChart({ width, height }) {
                   fill="none"
                   stroke={selectedWords.has(word.id) ? word.color : "none"}
                   strokeWidth="5"
-                />
+                >
+                  <title>{word.word}</title>
+                </path>
               </g>
             );
           })}
