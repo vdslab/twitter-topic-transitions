@@ -83,17 +83,21 @@ function TimelineChart({ width, height }) {
                   height={barHeightScale(item.tweetCount)}
                   fill={item.color}
                   onClick={() => {
-                    dispatch(
-                      slice.actions.selectTopics(
-                        topics
-                          .filter((topic) => {
-                            const start = new Date(topic.time);
-                            const stop = new Date(topic.stopTime);
-                            return t1 <= stop && start <= t2;
-                          })
-                          .map(({ id }) => id)
-                      )
-                    );
+                    if (selectedTopics.length !== 0 && active) {
+                      dispatch(slice.actions.selectTopics([]));
+                    } else {
+                      dispatch(
+                        slice.actions.selectTopics(
+                          topics
+                            .filter((topic) => {
+                              const start = new Date(topic.time);
+                              const stop = new Date(topic.stopTime);
+                              return t1 <= stop && start <= t2;
+                            })
+                            .map(({ id }) => id)
+                        )
+                      );
+                    }
                   }}
                 />
               </g>

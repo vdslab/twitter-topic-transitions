@@ -20,7 +20,28 @@ const App = () => {
         role="navigation"
         aria-label="main navigation"
       >
+        <div className="navbar-brand">
+          <a className="navbar-item" href=".">
+            <h1>Visualization of Twitter Toppic Toransitions</h1>
+          </a>
+        </div>
         <div className="navbar-menu">
+          <div className="navbar-start">
+            <a
+              className="navbar-item"
+              href="."
+              onClick={(event) => {
+                event.preventDefault();
+                alert(
+                  `Demo application for viaulization of twitter topic transitions.
+Recommended display resolution: Over Full HD
+Developed by: https://vdslab.jp`
+                );
+              }}
+            >
+              About
+            </a>
+          </div>
           <div className="navbar-end">
             <div className="navbar-item">
               <div className="buttons">
@@ -40,6 +61,16 @@ const App = () => {
                 >
                   <span className="icon">
                     <i className="fas fa-expand" />
+                  </span>
+                </button>
+                <button
+                  className="button"
+                  onClick={() => {
+                    alert("TBD");
+                  }}
+                >
+                  <span className="icon">
+                    <i className="fas fa-cogs" />
                   </span>
                 </button>
               </div>

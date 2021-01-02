@@ -5,7 +5,6 @@ import { HorizontalField } from "./HorizontalField.js";
 
 function WordBubbleChart({ width, height }) {
   const dispatch = useDispatch();
-  const topics = useSelector(({ topics }) => topics);
   const words = useSelector(({ words }) => words);
   const selectedTopics = useSelector(({ selectedTopics }) => selectedTopics);
   const selectedWords = useSelector(
