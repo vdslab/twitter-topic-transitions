@@ -2,28 +2,27 @@
 
 ## Data Preparation
 
-### jawiki corpus
-
-```shell-session
-$ curl https://dumps.wikimedia.org/jawiki/latest/jawiki-latest-pages-articles.xml.bz2 -o data/jawiki-latest-pages-articles.xml.bz2
-$ wikiextractor --json -o data/wiki_extracted jawiki-latest-pages-articles.xml.bz2
-$ python3 scripts/create_wiki_corpus.py -o data/corpus/jawiki.ndjson data/wiki_extracted/**/*
-```
-
 ### Twitter corpus
 
 ```shell-session
-$ python3 scripts/create_twitter_corpus.py -o data/corpus/twitter_corvid19.ndjson path/to/twitter/data/*.ndjson
+$ python3 scripts/create_twitter_corpus.py -o data/corpus/twitter_corvid19.ndjson --chunk=400 --window=3 path/to/twitter/data/*.ndjson
 ```
 
 ### Learning Doc2Vec model
 
 ```shell-session
-$ python3 scripts/d2v_learn.py --model data/twitter.model --vocabulary-output data/vocabulary.csv data/corpus/*.ndjson
+$ python3 scripts/d2v_learn.py --model data/twitter.model --vocabulary-output data/vocabulary.csv --vector-size 300 data/corpus/twitter_corvid19.ndjson
 ```
 
 ### generate json file
 
 ```shell-session
 $ python3 scripts/create_json.py -m ./data/twitter.model -o public/data.json --corpus=data/corpus/twitter_corvid19.ndjson
+```
+
+## Development
+
+```shell-session
+$ npm ci
+$ npm start
 ```
