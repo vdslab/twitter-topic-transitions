@@ -80,15 +80,18 @@ export async function loadData() {
     2
   );
   const pos2 = await layout(data.words, eps);
-  data.words.forEach((word, i) => {
-    const { x, y } = pos2[i];
-    word.x = x;
-    word.y = y;
-  });
   wordClusters.forEach((cluster, i) => {
     for (const wordId of cluster) {
       data.words[wordId].cluster = i;
     }
+  });
+  const wordColor = d3.scaleOrdinal(d3.schemePaired);
+  data.words.forEach((word, i) => {
+    const { x, y } = pos2[i];
+    word.x = x;
+    word.y = y;
+    word.color =
+      word.cluster === undefined ? "lightgray" : wordColor(word.cluster);
   });
 
   data.wordClusters = wordClusters;

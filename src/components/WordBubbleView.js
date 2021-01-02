@@ -1,5 +1,4 @@
 import { useDispatch, useSelector } from "react-redux";
-import * as d3 from "d3";
 import slice from "../slice";
 import { Responsive } from "./Responsive.js";
 import { HorizontalField } from "./HorizontalField.js";
@@ -9,6 +8,9 @@ function WordBubbleChart({ width, height }) {
   const topics = useSelector(({ topics }) => topics);
   const words = useSelector(({ words }) => words);
   const selectedTopics = useSelector(({ selectedTopics }) => selectedTopics);
+  const selectedWords = useSelector(
+    ({ selectedWords }) => new Set(selectedWords)
+  );
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
 
   const margin = {
@@ -19,11 +21,6 @@ function WordBubbleChart({ width, height }) {
   };
   const contentWidth = width - margin.left - margin.right;
   const contentHeight = height - margin.top - margin.bottom;
-
-  const color = d3.scaleOrdinal(d3.schemePaired);
-  for (const word of words) {
-    color(word.cluster);
-  }
 
   const maxSize = Math.max(
     Math.min(...words.map(({ x, r }) => x - r)),
@@ -51,33 +48,26 @@ function WordBubbleChart({ width, height }) {
                   key={item.id}
                   className="is-clickable"
                   transform={`translate(${item.x}, ${item.y})`}
-                  opacity={targetWords.has(item.id) ? 1 : 0.1}
-                  style={{
-                    transitionProperty: "opacity",
-                    transitionDuration: "1s",
-                    transitionTimingFunction: "ease",
-                  }}
                   onClick={() => {
-                    dispatch(
-                      slice.actions.selectTopics(
-                        topics
-                          .filter(
-                            ({ id }) => item.topicCount[id] >= minWordCount
-                          )
-                          .map(({ id }) => id)
-                      )
-                    );
+                    dispatch(slice.actions.toggleWord(item.id));
                   }}
                 >
                   <title>{`${item.word}`}</title>
                   <circle
                     r={item.r}
-                    fill={
-                      item.cluster === undefined
-                        ? "lightgray"
-                        : color(item.cluster)
-                    }
-                    opacity="0.7"
+                    fill={item.color}
+                    opacity={targetWords.has(item.id) ? 0.9 : 0.1}
+                    style={{
+                      transitionProperty: "opacity",
+                      transitionDuration: "1s",
+                      transitionTimingFunction: "ease",
+                    }}
+                  />
+                  <circle
+                    r={item.r}
+                    fill="none"
+                    stroke={selectedWords.has(item.id) ? "#444" : "none"}
+                    strokeWidth="2"
                   />
                   <text
                     className="is-unselectable"

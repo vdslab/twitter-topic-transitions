@@ -127,7 +127,6 @@ export function ProjectionView() {
                 className="input"
                 type="number"
                 min="0"
-                step="0.1"
                 value={selectionRadius}
                 onChange={(event) => {
                   dispatch(

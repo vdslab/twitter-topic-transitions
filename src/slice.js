@@ -9,6 +9,7 @@ const slice = createSlice({
     wordClusters: [],
     selectionRadius: 3,
     selectedTopics: [],
+    selectedWords: [],
     minWordCount: 1,
   },
   reducers: {
@@ -23,6 +24,17 @@ const slice = createSlice({
     },
     updateMinWordCount(state, action) {
       return Object.assign({}, state, { minWordCount: action.payload });
+    },
+    toggleWord(state, action) {
+      const word = action.payload;
+      const index = state.selectedWords.indexOf(word);
+      const selectedWords = Array.from(state.selectedWords);
+      if (index < 0) {
+        selectedWords.push(word);
+      } else {
+        selectedWords.splice(index, 1);
+      }
+      return Object.assign({}, state, { selectedWords });
     },
   },
 });
