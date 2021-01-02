@@ -1,5 +1,12 @@
 # Visualization of Topic Transitions on Twitter
 
+## Prerequirements
+
+```shell-session
+$ pip install -r requirements.txt
+$ npm ci
+```
+
 ## Data Preparation
 
 ### Twitter corpus
@@ -23,6 +30,5 @@ $ python3 scripts/create_json.py -m ./data/twitter.model -o public/data.json --c
 ## Development
 
 ```shell-session
-$ npm ci
 $ npm start
 ```
