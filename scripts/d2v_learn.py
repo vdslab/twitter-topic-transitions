@@ -15,7 +15,7 @@ def load_documents(*filenames):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('--model', dest='model',
+    parser.add_argument('-m', '--model', dest='model',
                         default='twitter.model', help='model output filename')
     parser.add_argument('--vector-size', dest='vector_size',
                         default=100, type=int, help='vector size')
@@ -24,8 +24,6 @@ def main():
     parser.add_argument('--min-count', dest='min_count', default=0, type=int)
     parser.add_argument('--seed', dest='seed', default=0,
                         type=int, help='random seed')
-    parser.add_argument('--vocabulary-output', dest='vocabulary',
-                        default='vocabulary.csv', help='model filename')
     parser.add_argument('files', nargs='+')
     args = parser.parse_args()
 

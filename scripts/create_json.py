@@ -8,7 +8,8 @@ from gensim.models.doc2vec import Doc2Vec
 from sklearn.manifold import TSNE
 
 datetime_format = '%a %b %d %H:%M:%S %z %Y'
-pattern_date = re.compile(r'[0-9]+月[0-9]+日')
+pattern_date = re.compile(r'[0-9]+月[0-9]+日|[0-9]/|[0-9]')
+pattern_number = re.compile(r'[0-9]+[人本年月日]')
 
 
 def main():
@@ -16,12 +17,16 @@ def main():
     parser.add_argument('-c', '--corpus', dest='corpus', help='corpus path')
     parser.add_argument('-m', '--model', dest='model', help='model path')
     parser.add_argument('-o', '--output', dest='output', help='output path')
+    parser.add_argument('-t', '--topn', dest='topn', default=10,
+                        type=int, help='take top n keyphrases per topic')
+    parser.add_argument('-l', '--limit', dest='limit', default=300,
+                        type=int, help='maximum number of keyphrases')
     parser.add_argument('--seed', dest='seed', default=0,
                         type=int, help='random seed')
-    parser.add_argument('--chunk', dest='chunk',
-                        default=100, help='chunk size', type=int)
-    parser.add_argument('--window', dest='window',
-                        default=20, help='window size', type=int)
+    parser.add_argument('--topic-perplexity',
+                        dest='topic_perplexity', default=30, type=float)
+    parser.add_argument('--word-perplexity',
+                        dest='word_perplexity', default=30, type=float)
     args = parser.parse_args()
 
     model = Doc2Vec.load(args.model)
@@ -44,6 +49,10 @@ def main():
                 continue
             if pattern_date.match(word):
                 continue
+            if pattern_number.match(word):
+                continue
+            if word.lower().startswith('http'):
+                continue
             target_words.add(word)
 
     tf = [{w: 0 for w in target_words} for _ in range(num_groups)]
@@ -64,24 +73,24 @@ def main():
         words = [(c / sum_tf * idf[w], w)
                  for w, c in tf[g].items()]
         words.sort(key=lambda row: row[0], reverse=True)
-        for (_, w) in words[:5]:
+        for (_, w) in words[:args.topn]:
             keyphrase[w] += 1
     words = [w for w in target_words if keyphrase[w] >= 1]
     words.sort(key=lambda w: keyphrase[w], reverse=True)
-    words = words[:500]
+    words = words[:args.limit]
 
-    topic_coordinates = TSNE(perplexity=5, random_state=args.seed)\
+    topic_coordinates = TSNE(perplexity=args.topic_perplexity, random_state=args.seed)\
         .fit_transform([model.docvecs['twhour{}'.format(i)] for i in range(num_groups)])
     topics = [{
         'id': i,
         'time': min(group_times[i], key=lambda s: datetime.strptime(s, datetime_format)),
         'stopTime': max(group_times[i], key=lambda s: datetime.strptime(s, datetime_format)),
-        'tweetCount': args.chunk,
+        'tweetCount': len(group_times),
         'x': float(x),
         'y': float(y)
     } for i, (x, y) in enumerate(topic_coordinates)]
 
-    word_coordinates = TSNE(perplexity=10, random_state=args.seed)\
+    word_coordinates = TSNE(perplexity=args.word_perplexity, random_state=args.seed)\
         .fit_transform([model.wv[w] for w in words])
     words = [{
         'id': i,

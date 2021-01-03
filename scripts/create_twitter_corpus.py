@@ -37,10 +37,10 @@ def full_text(obj):
 def main():
     parser = ArgumentParser()
     parser.add_argument('-o', '--output', dest='output',
-                        default='words.csv', help='output filename')
-    parser.add_argument('--chunk', dest='chunk',
+                        default='words.json', help='output filename')
+    parser.add_argument('-c', '--chunk', dest='chunk',
                         default=100, help='chunk size', type=int)
-    parser.add_argument('--window', dest='window',
+    parser.add_argument('-w', '--window', dest='window',
                         default=20, help='window size', type=int)
     parser.add_argument('files', nargs='+')
     args = parser.parse_args()
