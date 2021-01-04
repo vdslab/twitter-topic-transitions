@@ -11,8 +11,11 @@
     "start": "craco start"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "contributors": [
+    "Tiandong Xiao",
+    "Yosuke Onoue <onoue@likr-lab.com>"
+  ],
+  "license": "MIT",
   "devDependencies": {
     "@craco/craco": "^6.0.0",
     "gh-pages": "^3.1.0",
