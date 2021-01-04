@@ -10,7 +10,7 @@ const slice = createSlice({
     selectionRadius: 3,
     selectedTopics: [],
     selectedWords: [],
-    minWordCount: 1,
+    minWordCount: 0,
   },
   reducers: {
     loadData(state, action) {

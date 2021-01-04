@@ -99,8 +99,21 @@ export function WordBubbleView({ words, selectedTopics }) {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
         <HorizontalField label="Min Word Count">
-          <div className="field">
+          <div className="field has-addons">
             <div className="control">
+              <button
+                disabled={minWordCount <= 0}
+                className="button"
+                onClick={() => {
+                  dispatch(slice.actions.updateMinWordCount(minWordCount - 1));
+                }}
+              >
+                <span className="icon">
+                  <i className="fas fa-minus" />
+                </span>
+              </button>
+            </div>
+            <div className="control is-expanded">
               <input
                 className="input"
                 type="number"
@@ -112,6 +125,18 @@ export function WordBubbleView({ words, selectedTopics }) {
                   );
                 }}
               />
+            </div>
+            <div className="control">
+              <button
+                className="button"
+                onClick={() => {
+                  dispatch(slice.actions.updateMinWordCount(minWordCount + 1));
+                }}
+              >
+                <span className="icon">
+                  <i className="fas fa-plus" />
+                </span>
+              </button>
             </div>
           </div>
         </HorizontalField>

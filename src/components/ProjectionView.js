@@ -103,8 +103,23 @@ export function ProjectionView() {
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
         <HorizontalField label="Selection Radius">
-          <div className="field">
+          <div className="field has-addons">
             <div className="control">
+              <button
+                disabled={selectionRadius <= 0}
+                className="button"
+                onClick={() => {
+                  dispatch(
+                    slice.actions.updateSelectionRadius(selectionRadius - 1)
+                  );
+                }}
+              >
+                <span className="icon">
+                  <i className="fas fa-minus" />
+                </span>
+              </button>
+            </div>
+            <div className="control is-expanded">
               <input
                 className="input"
                 type="number"
@@ -116,6 +131,20 @@ export function ProjectionView() {
                   );
                 }}
               />
+            </div>
+            <div className="control">
+              <button
+                className="button"
+                onClick={() => {
+                  dispatch(
+                    slice.actions.updateSelectionRadius(selectionRadius + 1)
+                  );
+                }}
+              >
+                <span className="icon">
+                  <i className="fas fa-plus" />
+                </span>
+              </button>
             </div>
           </div>
         </HorizontalField>
