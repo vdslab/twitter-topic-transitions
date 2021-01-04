@@ -22,7 +22,7 @@ const App = () => {
       >
         <div className="navbar-brand">
           <a className="navbar-item" href=".">
-            <h1>Visualization of Twitter Toppic Toransitions</h1>
+            <h1>Visualization of Twitter Topic Transitions</h1>
           </a>
         </div>
         <div className="navbar-menu">
