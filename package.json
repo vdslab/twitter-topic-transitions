@@ -1,9 +1,9 @@
 {
-  "name": "tweets",
+  "name": "twitter-topic-transitions",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "homepage": "https://victorXTD.github.io/tweets",
+  "homepage": "https://vdslab.github.io/twitter-topic-transitions/",
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
