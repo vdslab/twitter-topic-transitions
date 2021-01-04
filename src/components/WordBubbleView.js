@@ -29,45 +29,57 @@ function WordBubbleChart({ width, height }) {
         <g transform={`translate(${contentWidth / 2},${contentHeight / 2})`}>
           <g transform={`scale(${s})`}>
             <g transform={`translate(${-x},${-y})`}>
-              {words.map((item) => {
+              {words.map((word) => {
+                const wordCount =
+                  selectedTopics.length === 0
+                    ? word.count
+                    : selectedTopics.reduce(
+                        (s, id) => s + word.topicCount[id],
+                        0
+                      );
+                const globalOpacity = wordCount < minWordCount ? 0 : 1;
+                const localOpacity = Math.sqrt(wordCount / word.count);
                 return (
                   <g
-                    key={item.id}
+                    key={word.id}
                     className="is-clickable"
-                    opacity={
-                      selectedTopics.length === 0
-                        ? 1
-                        : selectedTopics.filter(
-                            (id) => item.topicCount[id] >= minWordCount
-                          ).length / selectedTopics.length
-                    }
+                    opacity={globalOpacity}
                     style={{
                       transitionProperty: "opacity",
                       transitionDuration: "1s",
                       transitionTimingFunction: "ease",
                     }}
-                    transform={`translate(${item.x}, ${item.y})`}
+                    transform={`translate(${word.x}, ${word.y})`}
                     onClick={() => {
-                      dispatch(slice.actions.toggleWord(item.id));
+                      dispatch(slice.actions.toggleWord(word.id));
                     }}
                   >
-                    <title>{`${item.word}`}</title>
-                    <circle r={item.r} fill={item.color} opacity="0.7" />
+                    <title>{`${word.word}`}</title>
                     <circle
-                      r={item.r}
+                      r={word.r}
+                      opacity={localOpacity}
+                      style={{
+                        transitionProperty: "opacity",
+                        transitionDuration: "1s",
+                        transitionTimingFunction: "ease",
+                      }}
+                      fill={word.color}
+                    />
+                    <circle
+                      r={word.r}
                       fill="none"
-                      stroke={selectedWords.has(item.id) ? "#363636" : "none"}
+                      stroke={selectedWords.has(word.id) ? "#363636" : "none"}
                       strokeWidth="2"
                     />
                     <text
                       className="is-unselectable"
-                      fontSize={item.fontSize}
+                      fontSize={word.fontSize}
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontWeight="700"
                       fill="#363636"
                     >
-                      {item.word}
+                      {word.word}
                     </text>
                   </g>
                 );

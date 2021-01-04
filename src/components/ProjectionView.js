@@ -17,75 +17,78 @@ function ProjectionChart({ width, height }) {
   const contentWidth = width - margin.left - margin.right;
   const contentHeight = height - margin.top - margin.bottom;
 
+  const { x, y, s } = scale(topics, contentWidth, contentHeight);
+  function xScale(cx) {
+    return (cx - x) * s;
+  }
+  function yScale(cy) {
+    return (cy - y) * s;
+  }
   const line = d3
     .line()
-    .x((item) => item.x)
-    .y((item) => item.y);
-  const { x, y, s } = scale(topics, contentWidth, contentHeight);
+    .x((item) => xScale(item.x))
+    .y((item) => yScale(item.y));
   const timeFormat = d3.timeFormat("%Y-%m-%d %H:%M");
 
   return (
     <svg viewBox={`0 0 ${width} ${height}`}>
       <g transform={`translate(${margin.left}, ${margin.top})`}>
         <g transform={`translate(${contentWidth / 2},${contentHeight / 2})`}>
-          <g transform={`scale(${s})`}>
-            <g transform={`translate(${-x},${-y})`}>
-              <g>
-                <path
-                  fill="none"
-                  stroke="lightgray"
-                  opacity="0.5"
-                  d={line(topics)}
-                />
-              </g>
-              <g>
-                {topics.map((item, i) => {
-                  return (
-                    <g
-                      key={i}
-                      className="is-clickable"
-                      opacity={
-                        selectedTopics.size === 0 || selectedTopics.has(item.id)
-                          ? 1
-                          : 0.1
-                      }
-                      style={{
-                        transitionProperty: "opacity",
-                        transitionDuration: "1s",
-                        transitionTimingFunction: "ease",
-                      }}
-                      transform={`translate(${item.x}, ${item.y})`}
-                      onClick={async () => {
-                        if (selectedTopics.has(item.id)) {
-                          dispatch(slice.actions.selectTopics([]));
+          <g>
+            <path
+              fill="none"
+              stroke="lightgray"
+              strokeWidth="3"
+              opacity="0.5"
+              d={line(topics)}
+            />
+          </g>
+          <g>
+            {topics.map((item, i) => {
+              return (
+                <g
+                  key={i}
+                  className="is-clickable"
+                  opacity={
+                    selectedTopics.size === 0 || selectedTopics.has(item.id)
+                      ? 1
+                      : 0.1
+                  }
+                  style={{
+                    transitionProperty: "opacity",
+                    transitionDuration: "1s",
+                    transitionTimingFunction: "ease",
+                  }}
+                  transform={`translate(${xScale(item.x)}, ${yScale(item.y)})`}
+                  onClick={async () => {
+                    if (selectedTopics.has(item.id)) {
+                      dispatch(slice.actions.selectTopics([]));
+                      return;
+                    }
+                    const { clusters } = await dbscan(
+                      topics.map(({ x, y }) => [x, y]),
+                      selectionRadius,
+                      1
+                    );
+                    for (const cluster of clusters) {
+                      for (const id of cluster) {
+                        if (id === item.id) {
+                          dispatch(slice.actions.selectTopics(cluster));
                           return;
                         }
-                        const { clusters } = await dbscan(
-                          topics.map(({ x, y }) => [x, y]),
-                          selectionRadius,
-                          1
-                        );
-                        for (const cluster of clusters) {
-                          for (const id of cluster) {
-                            if (id === item.id) {
-                              dispatch(slice.actions.selectTopics(cluster));
-                              return;
-                            }
-                          }
-                        }
-                      }}
-                    >
-                      <circle r={item.r} opacity="0.7" fill={item.color}>
-                        <title>
-                          {timeFormat(new Date(item.time))}-
-                          {timeFormat(new Date(item.stopTime))}
-                        </title>
-                      </circle>
-                    </g>
-                  );
-                })}
-              </g>
-            </g>
+                      }
+                    }
+                  }}
+                >
+                  <circle r={item.r0} opacity="0.7" fill={item.color}>
+                    <title>
+                      {timeFormat(new Date(item.time))}-
+                      {timeFormat(new Date(item.stopTime))}
+                    </title>
+                  </circle>
+                </g>
+              );
+            })}
           </g>
         </g>
       </g>

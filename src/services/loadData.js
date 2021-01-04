@@ -51,10 +51,11 @@ export async function loadData() {
   const topicCircleSize = d3
     .scaleSqrt()
     .domain(d3.extent(data.topics, tweetPerHour))
-    .range([0.5, 4]);
+    .range([3, 15]);
   for (const topic of data.topics) {
     topic.tweetPerHour = tweetPerHour(topic);
-    topic.r = topicCircleSize(topic.tweetPerHour);
+    topic.r = 0;
+    topic.r0 = topicCircleSize(topic.tweetPerHour);
     topic.color = timeColor(getTime(topic));
   }
 
