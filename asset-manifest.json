@@ -1,31 +1,31 @@
 {
   "files": {
     "main.css": "/twitter-topic-transitions/static/css/main.feb417a9.chunk.css",
-    "main.js": "/twitter-topic-transitions/static/js/main.190bf651.chunk.js",
-    "main.js.map": "/twitter-topic-transitions/static/js/main.190bf651.chunk.js.map",
+    "main.js": "/twitter-topic-transitions/static/js/main.380cb045.chunk.js",
+    "main.js.map": "/twitter-topic-transitions/static/js/main.380cb045.chunk.js.map",
     "runtime-main.js": "/twitter-topic-transitions/static/js/runtime-main.cadeeed7.js",
     "runtime-main.js.map": "/twitter-topic-transitions/static/js/runtime-main.cadeeed7.js.map",
     "static/css/2.01576217.chunk.css": "/twitter-topic-transitions/static/css/2.01576217.chunk.css",
-    "static/js/2.83fe639d.chunk.js": "/twitter-topic-transitions/static/js/2.83fe639d.chunk.js",
-    "static/js/2.83fe639d.chunk.js.map": "/twitter-topic-transitions/static/js/2.83fe639d.chunk.js.map",
+    "static/js/2.27f9071e.chunk.js": "/twitter-topic-transitions/static/js/2.27f9071e.chunk.js",
+    "static/js/2.27f9071e.chunk.js.map": "/twitter-topic-transitions/static/js/2.27f9071e.chunk.js.map",
     "0122b5b0cedbbdb80a18.worker.js": "/twitter-topic-transitions/0122b5b0cedbbdb80a18.worker.js",
     "0122b5b0cedbbdb80a18.worker.js.map": "/twitter-topic-transitions/0122b5b0cedbbdb80a18.worker.js.map",
+    "2fe890b6e5a27f6c73ad.worker.js": "/twitter-topic-transitions/2fe890b6e5a27f6c73ad.worker.js",
+    "2fe890b6e5a27f6c73ad.worker.js.map": "/twitter-topic-transitions/2fe890b6e5a27f6c73ad.worker.js.map",
     "9398b91f8e7660e9636f.worker.js": "/twitter-topic-transitions/9398b91f8e7660e9636f.worker.js",
     "9398b91f8e7660e9636f.worker.js.LICENSE.txt": "/twitter-topic-transitions/9398b91f8e7660e9636f.worker.js.LICENSE.txt",
     "9398b91f8e7660e9636f.worker.js.map": "/twitter-topic-transitions/9398b91f8e7660e9636f.worker.js.map",
-    "b518c8092a4e2e3e1009.worker.js": "/twitter-topic-transitions/b518c8092a4e2e3e1009.worker.js",
-    "b518c8092a4e2e3e1009.worker.js.map": "/twitter-topic-transitions/b518c8092a4e2e3e1009.worker.js.map",
     "index.html": "/twitter-topic-transitions/index.html",
     "static/css/2.01576217.chunk.css.map": "/twitter-topic-transitions/static/css/2.01576217.chunk.css.map",
     "static/css/main.feb417a9.chunk.css.map": "/twitter-topic-transitions/static/css/main.feb417a9.chunk.css.map",
-    "static/js/2.83fe639d.chunk.js.LICENSE.txt": "/twitter-topic-transitions/static/js/2.83fe639d.chunk.js.LICENSE.txt",
+    "static/js/2.27f9071e.chunk.js.LICENSE.txt": "/twitter-topic-transitions/static/js/2.27f9071e.chunk.js.LICENSE.txt",
     "static/media/all.css": "/twitter-topic-transitions/static/media/fa-solid-900.46fdbd2d.woff"
   },
   "entrypoints": [
     "static/js/runtime-main.cadeeed7.js",
     "static/css/2.01576217.chunk.css",
-    "static/js/2.83fe639d.chunk.js",
+    "static/js/2.27f9071e.chunk.js",
     "static/css/main.feb417a9.chunk.css",
-    "static/js/main.190bf651.chunk.js"
+    "static/js/main.380cb045.chunk.js"
   ]
 }
