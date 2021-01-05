@@ -75,6 +75,7 @@ function TimelineChart({ width, height }) {
                 }}
                 opacity={active ? 1 : 0.1}
               >
+                <title>{timeFormat(t1)}</title>
                 <rect
                   className="is-clickable"
                   x={xScale(new Date(item.time)) - barWidth / 2}
@@ -242,7 +243,7 @@ function TimelineChart({ width, height }) {
             fontSize="16"
             fill={axisColor}
           >
-            Word Occurence
+            Word Occurrence
           </text>
           <line x1="0" y1={contentHeight} x2="0" y2="0" stroke={axisColor} />
           <g>
