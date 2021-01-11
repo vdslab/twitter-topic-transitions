@@ -1,5 +1,7 @@
 # Visualization of Topic Transitions on Twitter
 
+A demo is available at: https://vdslab.github.io/twitter-topic-transitions/.
+
 ## Prerequirements
 
 ```shell-session
