@@ -8,7 +8,7 @@ const App = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     (async () => {
-      const data = await loadData();
+      const data = await loadData("data-covid19.json");
       dispatch(slice.actions.loadData(data));
     })();
   }, [dispatch]);
@@ -35,12 +35,34 @@ const App = () => {
                 alert(
                   `Demo application for viaulization of twitter topic transitions.
 Recommended display resolution: Over Full HD
-Developed by: https://vdslab.jp`
+Developed by: https://vdslab.jp`,
                 );
               }}
             >
               About
             </a>
+            <div className="navbar-item">
+              <div className="field">
+                <div className="control">
+                  <div className="select">
+                    <select
+                      defaultValue="data-covid19.json"
+                      onChange={async (event) => {
+                        const data = await loadData(event.target.value);
+                        dispatch(slice.actions.loadData(data));
+                      }}
+                    >
+                      <option value="data-fukushima.json">
+                        2011 Fukushima Dataset
+                      </option>
+                      <option value="data-covid19.json">
+                        2020 Covid19 Dataset
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="navbar-end">
             <div className="navbar-item">

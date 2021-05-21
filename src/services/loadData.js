@@ -37,8 +37,8 @@ function tweetPerHour(item) {
   return (item.tweetCount * 3600000) / (stop - start);
 }
 
-export async function loadData() {
-  const response = await fetch("data.json");
+export async function loadData(url) {
+  const response = await fetch(url);
   const data = await response.json();
 
   const timeColor = d3
@@ -74,7 +74,7 @@ export async function loadData() {
   const { clusters: wordClusters } = await dbscan(
     data.words.map(({ x, y }) => [x, y]),
     eps,
-    2
+    2,
   );
   wordClusters.forEach((cluster, i) => {
     for (const wordId of cluster) {

@@ -1,20 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  topics: [],
+  words: [],
+  dailyCount: [],
+  topicClusters: [],
+  wordClusters: [],
+  selectionRadius: 3,
+  selectedTopics: [],
+  selectedWords: [],
+  minWordCount: 0,
+};
 const slice = createSlice({
   name: "app",
-  initialState: {
-    topics: [],
-    words: [],
-    dailyCount: [],
-    topicClusters: [],
-    wordClusters: [],
-    selectionRadius: 3,
-    selectedTopics: [],
-    selectedWords: [],
-    minWordCount: 0,
-  },
+  initialState,
   reducers: {
     loadData(state, action) {
-      return Object.assign({}, state, action.payload);
+      return Object.assign({}, initialState, action.payload);
     },
     updateSelectionRadius(state, action) {
       return Object.assign({}, state, { selectionRadius: action.payload });
