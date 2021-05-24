@@ -13,7 +13,6 @@ function WordBubbleChart({ width, height }) {
     ({ selectedWords }) => new Set(selectedWords),
   );
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
-
   const discoverTopic = useSelector(({ discoverTopic }) => discoverTopic);
 
   const margin = {
@@ -177,28 +176,24 @@ export function WordBubbleView({ words, selectedTopics }) {
             </div>
           </div>
         </HorizontalField>
-        <div className="field has-addons">
-          <div className="control">
-            <button
-              className="button"
-              onClick={() => {
-                dispatch(slice.actions.toggleDiscoverTopic());
-                dispatch(slice.actions.selectTopics([]));
-                dispatch(slice.actions.selectedWords([]));
-              }}
-            >
-              <text className="text">Keyparase Discover</text>
-              <span className="icon">
-                <i
-                  className={
-                    discoverTopic ? "fa fa-check-square" : "fa fa-square"
-                  }
-                  aria-hidden={true}
-                ></i>
-              </span>
-            </button>
+        <HorizontalField>
+          <div className="field ">
+            <div className="control">
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={discoverTopic}
+                  onChange={() => {
+                    dispatch(slice.actions.toggleDiscoverTopic());
+                    dispatch(slice.actions.selectTopics([]));
+                    dispatch(slice.actions.selectedWords([]));
+                  }}
+                />{" "}
+                Find related topics from selected keyphrases
+              </label>
+            </div>
           </div>
-        </div>
+        </HorizontalField>
       </div>
       <div
         style={{
