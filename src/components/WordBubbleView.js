@@ -14,6 +14,10 @@ function WordBubbleChart({ width, height }) {
   );
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
 
+  const keyparaseDiscover = useSelector(
+    ({ keyparaseDiscover }) => keyparaseDiscover
+  );
+
   const margin = {
     left: 10,
     right: 10,
@@ -54,35 +58,37 @@ function WordBubbleChart({ width, height }) {
                     onClick={() => {
                       dispatch(slice.actions.toggleWord(word.id));
 
-                      const sWords = Array.from(selectedWords);
-                      const index = sWords.indexOf(word.id);
-                      if (index < 0) {
-                        sWords.push(word.id);
-                      } else {
-                        sWords.splice(index, 1);
-                      }
+                      if (keyparaseDiscover) {
+                        const sWords = Array.from(selectedWords);
+                        const index = sWords.indexOf(word.id);
+                        if (index < 0) {
+                          sWords.push(word.id);
+                        } else {
+                          sWords.splice(index, 1);
+                        }
 
-                      if (sWords.size === 0) {
-                        dispatch(slice.actions.selectTopics([]));
-                      } else {
-                        dispatch(
-                          slice.actions.selectTopics(
-                            topics
-                              .filter((topic) => {
-                                const topicId = topic.id;
-                                var flag = 0;
-                                sWords.forEach(function (element) {
-                                  if (
-                                    words[element].topicCount[topicId] <
-                                    minWordCount
-                                  )
-                                    flag = 1;
-                                });
-                                return flag === 0;
-                              })
-                              .map(({ id }) => id)
-                          )
-                        );
+                        if (sWords.size === 0) {
+                          dispatch(slice.actions.selectTopics([]));
+                        } else {
+                          dispatch(
+                            slice.actions.selectTopics(
+                              topics
+                                .filter((topic) => {
+                                  const topicId = topic.id;
+                                  var flag = 0;
+                                  sWords.forEach(function (element) {
+                                    if (
+                                      words[element].topicCount[topicId] <
+                                      minWordCount
+                                    )
+                                      flag = 1;
+                                  });
+                                  return flag === 0;
+                                })
+                                .map(({ id }) => id)
+                            )
+                          );
+                        }
                       }
                     }}
                   >
@@ -127,6 +133,10 @@ function WordBubbleChart({ width, height }) {
 export function WordBubbleView({ words, selectedTopics }) {
   const dispatch = useDispatch();
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
+  const keyparaseDiscover = useSelector(
+    ({ keyparaseDiscover }) => keyparaseDiscover
+  );
+  console.log(keyparaseDiscover);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
@@ -172,11 +182,37 @@ export function WordBubbleView({ words, selectedTopics }) {
             </div>
           </div>
         </HorizontalField>
+        <div className="field has-addons">
+          <div className="control">
+            <button
+              className="button"
+              onClick={() => {
+                dispatch(
+                  slice.actions.updateKeyparaseDiscoverSwitch(
+                    !keyparaseDiscover
+                  )
+                );
+                dispatch(slice.actions.selectTopics([]));
+                dispatch(slice.actions.selectedWords([]));
+              }}
+            >
+              <text className="text">Keyparase Discover</text>
+              <span className="icon">
+                <i
+                  className={
+                    keyparaseDiscover ? "fa fa-check-square" : "fa fa-square"
+                  }
+                  aria-hidden={true}
+                ></i>
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
       <div
         style={{
           position: "absolute",
-          top: "64px",
+          top: "128px",
           right: 0,
           bottom: 0,
           left: 0,

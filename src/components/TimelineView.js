@@ -15,6 +15,9 @@ function TimelineChart({ width, height }) {
     ({ selectedWords }) => new Set(selectedWords)
   );
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
+  const keyparaseDiscover = useSelector(
+    ({ keyparaseDiscover }) => keyparaseDiscover
+  );
 
   const margin = {
     top: 20,
@@ -121,35 +124,37 @@ function TimelineChart({ width, height }) {
                 onClick={() => {
                   dispatch(slice.actions.toggleWord(word.id));
 
-                  const sWords = Array.from(selectedWords);
-                  const index = sWords.indexOf(word.id);
-                  if (index < 0) {
-                    sWords.push(word.id);
-                  } else {
-                    sWords.splice(index, 1);
-                  }
+                  if (keyparaseDiscover) {
+                    const sWords = Array.from(selectedWords);
+                    const index = sWords.indexOf(word.id);
+                    if (index < 0) {
+                      sWords.push(word.id);
+                    } else {
+                      sWords.splice(index, 1);
+                    }
 
-                  if (sWords.size === 0) {
-                    dispatch(slice.actions.selectTopics([]));
-                  } else {
-                    dispatch(
-                      slice.actions.selectTopics(
-                        topics
-                          .filter((topic) => {
-                            const topicId = topic.id;
-                            var flag = 0;
-                            sWords.forEach(function (element) {
-                              if (
-                                words[element].topicCount[topicId] <
-                                minWordCount
-                              )
-                                flag = 1;
-                            });
-                            return flag === 0;
-                          })
-                          .map(({ id }) => id)
-                      )
-                    );
+                    if (sWords.size === 0) {
+                      dispatch(slice.actions.selectTopics([]));
+                    } else {
+                      dispatch(
+                        slice.actions.selectTopics(
+                          topics
+                            .filter((topic) => {
+                              const topicId = topic.id;
+                              var flag = 0;
+                              sWords.forEach(function (element) {
+                                if (
+                                  words[element].topicCount[topicId] <
+                                  minWordCount
+                                )
+                                  flag = 1;
+                              });
+                              return flag === 0;
+                            })
+                            .map(({ id }) => id)
+                        )
+                      );
+                    }
                   }
                 }}
               >

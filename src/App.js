@@ -35,7 +35,7 @@ const App = () => {
                 alert(
                   `Demo application for viaulization of twitter topic transitions.
 Recommended display resolution: Over Full HD
-Developed by: https://vdslab.jp`,
+Developed by: https://vdslab.jp`
                 );
               }}
             >
@@ -71,6 +71,7 @@ Developed by: https://vdslab.jp`,
                   className="button"
                   onClick={() => {
                     dispatch(slice.actions.selectTopics([]));
+                    dispatch(slice.actions.selectedWords([]));
                   }}
                 >
                   Clear Selection
