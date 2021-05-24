@@ -10,13 +10,11 @@ function WordBubbleChart({ width, height }) {
   const words = useSelector(({ words }) => words);
   const selectedTopics = useSelector(({ selectedTopics }) => selectedTopics);
   const selectedWords = useSelector(
-    ({ selectedWords }) => new Set(selectedWords)
+    ({ selectedWords }) => new Set(selectedWords),
   );
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
 
-  const keyparaseDiscover = useSelector(
-    ({ keyparaseDiscover }) => keyparaseDiscover
-  );
+  const discoverTopic = useSelector(({ discoverTopic }) => discoverTopic);
 
   const margin = {
     left: 10,
@@ -40,7 +38,7 @@ function WordBubbleChart({ width, height }) {
                     ? word.count
                     : selectedTopics.reduce(
                         (s, id) => s + word.topicCount[id],
-                        0
+                        0,
                       );
                 const globalOpacity = wordCount < minWordCount ? 0 : 1;
                 const localOpacity = Math.sqrt(wordCount / word.count);
@@ -58,7 +56,7 @@ function WordBubbleChart({ width, height }) {
                     onClick={() => {
                       dispatch(slice.actions.toggleWord(word.id));
 
-                      if (keyparaseDiscover) {
+                      if (discoverTopic) {
                         const sWords = Array.from(selectedWords);
                         const index = sWords.indexOf(word.id);
                         if (index < 0) {
@@ -85,8 +83,8 @@ function WordBubbleChart({ width, height }) {
                                   });
                                   return flag === 0;
                                 })
-                                .map(({ id }) => id)
-                            )
+                                .map(({ id }) => id),
+                            ),
                           );
                         }
                       }
@@ -133,10 +131,7 @@ function WordBubbleChart({ width, height }) {
 export function WordBubbleView({ words, selectedTopics }) {
   const dispatch = useDispatch();
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
-  const keyparaseDiscover = useSelector(
-    ({ keyparaseDiscover }) => keyparaseDiscover
-  );
-  console.log(keyparaseDiscover);
+  const discoverTopic = useSelector(({ discoverTopic }) => discoverTopic);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <div className="p-3">
@@ -163,7 +158,7 @@ export function WordBubbleView({ words, selectedTopics }) {
                 value={minWordCount}
                 onChange={(event) => {
                   dispatch(
-                    slice.actions.updateMinWordCount(+event.target.value)
+                    slice.actions.updateMinWordCount(+event.target.value),
                   );
                 }}
               />
@@ -187,11 +182,7 @@ export function WordBubbleView({ words, selectedTopics }) {
             <button
               className="button"
               onClick={() => {
-                dispatch(
-                  slice.actions.updateKeyparaseDiscoverSwitch(
-                    !keyparaseDiscover
-                  )
-                );
+                dispatch(slice.actions.toggleDiscoverTopic());
                 dispatch(slice.actions.selectTopics([]));
                 dispatch(slice.actions.selectedWords([]));
               }}
@@ -200,7 +191,7 @@ export function WordBubbleView({ words, selectedTopics }) {
               <span className="icon">
                 <i
                   className={
-                    keyparaseDiscover ? "fa fa-check-square" : "fa fa-square"
+                    discoverTopic ? "fa fa-check-square" : "fa fa-square"
                   }
                   aria-hidden={true}
                 ></i>

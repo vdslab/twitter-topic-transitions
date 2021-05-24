@@ -9,15 +9,13 @@ function TimelineChart({ width, height }) {
   const words = useSelector(({ words }) => words);
   const dailyCount = useSelector(({ dailyCount }) => dailyCount);
   const selectedTopics = useSelector(({ topics, selectedTopics }) =>
-    selectedTopics.map((id) => topics[id])
+    selectedTopics.map((id) => topics[id]),
   );
   const selectedWords = useSelector(
-    ({ selectedWords }) => new Set(selectedWords)
+    ({ selectedWords }) => new Set(selectedWords),
   );
   const minWordCount = useSelector(({ minWordCount }) => minWordCount);
-  const keyparaseDiscover = useSelector(
-    ({ keyparaseDiscover }) => keyparaseDiscover
-  );
+  const discoverTopic = useSelector(({ discoverTopic }) => discoverTopic);
 
   const margin = {
     top: 20,
@@ -99,8 +97,8 @@ function TimelineChart({ width, height }) {
                               const stop = new Date(topic.stopTime);
                               return t1 <= stop && start <= t2;
                             })
-                            .map(({ id }) => id)
-                        )
+                            .map(({ id }) => id),
+                        ),
                       );
                     }
                   }}
@@ -124,7 +122,7 @@ function TimelineChart({ width, height }) {
                 onClick={() => {
                   dispatch(slice.actions.toggleWord(word.id));
 
-                  if (keyparaseDiscover) {
+                  if (discoverTopic) {
                     const sWords = Array.from(selectedWords);
                     const index = sWords.indexOf(word.id);
                     if (index < 0) {
@@ -151,8 +149,8 @@ function TimelineChart({ width, height }) {
                               });
                               return flag === 0;
                             })
-                            .map(({ id }) => id)
-                        )
+                            .map(({ id }) => id),
+                        ),
                       );
                     }
                   }
@@ -184,7 +182,7 @@ function TimelineChart({ width, height }) {
             const maxIndex = dailyCount.reduce(
               (x, item, i) =>
                 item.words[word.id] > dailyCount[x].words[word.id] ? i : x,
-              0
+              0,
             );
             const maxItem = dailyCount[maxIndex];
             return (
@@ -220,8 +218,8 @@ function TimelineChart({ width, height }) {
                             });
                             return flag === 0;
                           })
-                          .map(({ id }) => id)
-                      )
+                          .map(({ id }) => id),
+                      ),
                     );
                   }
                 }}

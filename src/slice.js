@@ -10,7 +10,7 @@ const initialState = {
   selectedTopics: [],
   selectedWords: [],
   minWordCount: 1,
-  keyparaseDiscover: false,
+  discoverTopic: false,
 };
 const slice = createSlice({
   name: "app",
@@ -28,8 +28,8 @@ const slice = createSlice({
     updateMinWordCount(state, action) {
       return Object.assign({}, state, { minWordCount: action.payload });
     },
-    updateKeyparaseDiscoverSwitch(state, action) {
-      return Object.assign({}, state, { keyparaseDiscover: action.payload });
+    toggleDiscoverTopic(state) {
+      return Object.assign({}, state, { discoverTopic: !state.discoverTopic });
     },
     selectedWords(state, action) {
       return Object.assign({}, state, { selectedWords: action.payload });
